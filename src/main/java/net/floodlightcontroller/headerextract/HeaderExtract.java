@@ -93,6 +93,7 @@ public class HeaderExtract implements IOFMessageListener, IFloodlightModule {
                                             IFloodlightProviderService.CONTEXT_PI_PAYLOAD);
  
         Long sourceMACHash = eth.getSourceMACAddress().getLong();
+        logger.info("HOST-MAC: "+sourceMACHash);
         System.out.println("------------MAC Address: "+ sourceMACHash);
         if (!macAddresses.contains(sourceMACHash)) {
             macAddresses.add(sourceMACHash);
