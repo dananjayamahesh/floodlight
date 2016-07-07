@@ -9,6 +9,6 @@ public class WifiOffloadStorageRulesResource extends WifiOffloadResourceBase {
 	@Get("json")
 	public Object handleRequest() {
 		IWifiOffloadService wifioffload = getWifiOffloadService();
-		return wifioffload.getStorageRules();
+		return wifioffload.getStorageUserEntries();
 	}
 }

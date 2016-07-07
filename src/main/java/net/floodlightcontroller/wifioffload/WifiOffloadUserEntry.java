@@ -14,13 +14,20 @@ import net.floodlightcontroller.wifioffload.WifiOffloadUserEntrySerializer;
 @JsonSerialize(using=WifiOffloadUserEntrySerializer.class)
 public class WifiOffloadUserEntry implements Comparable<WifiOffloadUserEntry> {
  
-	public int userId;
+	public long userId;
 	public DatapathId dpId;
 	public OFPort portIn;
 	public MacAddress userMacAddress;
 	public IPv4Address userIpAddress;
 	public int areaId;
 	public int sdnConId;
+	
+	public boolean anyDpId;
+	public boolean anyPortIn;
+	public boolean anyUserMacAddress;
+	public boolean anyUserIpAddress;
+	public boolean anyAreaId;
+	public boolean anySdnConId;
 	
 	public int priority = 0;
 	  
@@ -45,13 +52,18 @@ public class WifiOffloadUserEntry implements Comparable<WifiOffloadUserEntry> {
 	}
 	
 	
-	  public int genID() {
-	        int uid = this.hashCode();
-	        if (uid < 0) {
-	            uid = Math.abs(uid);
-	            uid = uid * 15551;
+	  public long genID() {
+	      
+	        return this.userMacAddress.getLong();
+	    }
+	  
+	    public boolean isSameAs(WifiOffloadUserEntry r) {
+	       
+	    	if (this.userId != r.userId) {
+	    		
+	            return false;
 	        }
-	        return uid;
+	        return true;
 	    }
 
 }

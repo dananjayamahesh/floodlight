@@ -18,10 +18,12 @@ public class WifiOffloadUserEntrySerializer extends JsonSerializer<WifiOffloadUs
 jGen.writeStartObject();
         
         jGen.writeNumberField("userid", entry.userId);
+        jGen.writeNumberField("dpid", entry.dpId.getLong());
+        jGen.writeNumberField("portin", entry.portIn.getPortNumber());
         jGen.writeNumberField("usermacaddr", entry.userMacAddress.getLong());
         jGen.writeNumberField("useripaddress", entry.userIpAddress.getInt());
-        jGen.writeNumberField("areaId", entry.areaId);
-        jGen.writeNumberField("sdnConId", entry.sdnConId);
+        jGen.writeNumberField("areaid", entry.areaId);
+        jGen.writeNumberField("conid", entry.sdnConId);
         jGen.writeEndObject();
 	}
 

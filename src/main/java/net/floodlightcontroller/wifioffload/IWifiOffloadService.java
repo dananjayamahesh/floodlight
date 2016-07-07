@@ -24,7 +24,7 @@ public interface IWifiOffloadService extends IFloodlightService {
      * Returns all of the wifi-offload rules
      * @return List of all rules
      */
-    public List<WifiOffloadUserEntry> getRules();
+    public List<WifiOffloadUserEntry> getUserEntries();
     
     /**
      * Returns the user ID
@@ -36,7 +36,7 @@ public interface IWifiOffloadService extends IFloodlightService {
      * Sets the user Id
      * @param newMask The new user ID
      */
-    public void setUserId(int userId);
+    public void setUserId(long userId);
 
     /**
      * Returns all of the wifi-offload entries in storage
@@ -46,7 +46,7 @@ public interface IWifiOffloadService extends IFloodlightService {
     public String getConName();
     public void setConName(String conName);
     
-    public List<Map<String, Object>> getStorageRules();
+    public List<Map<String, Object>> getStorageUserEntries();
 
     /**
      * Adds a new wifi-offload user entry
@@ -56,7 +56,7 @@ public interface IWifiOffloadService extends IFloodlightService {
     /**
      * Deletes a wifi-offload user entry
      */
-    public void deleteUserEntry(int userId);
+    public void deleteUserEntry(long userId);
 	
 	
 }

@@ -1,7 +1,10 @@
 package net.floodlightcontroller.wifioffload;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
+import org.projectfloodlight.openflow.types.MacAddress;
 import org.restlet.data.Status;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
@@ -21,11 +24,17 @@ public class WifiOffloadUserIdResource extends WifiOffloadResourceBase {
 	private static final Logger log = LoggerFactory.getLogger(WifiOffloadUserIdResource.class);
 
 	@Get("json")
-	public Object handleRequest() {
+	public Object handleRequest(String userIdStr) {
 		IWifiOffloadService wifioffload = getWifiOffloadService();
-		return "{\"userid\":\"" + wifioffload.getUserId() + "\"}";
+		
+		log.info("SEARCHING: "+userIdStr);
+		MacAddress userMacAddress = MacAddress.of(userIdStr);
+		long userId= userMacAddress.getLong();
+		boolean foundUserId=checkUserIdExists(userId,wifioffload.getUserEntries());
+		return "{\"userid\":\"" +userId+":"+ ((foundUserId)?"YES":"NO") + "\"}";
 	}
 
+	
 
 	@Post
 	public String handlePost(String fmJson) {
@@ -85,6 +94,21 @@ public class WifiOffloadUserIdResource extends WifiOffloadResourceBase {
 		}
 
 		return userId;
+	}
+	
+	public static boolean checkUserIdExists(long userId, List<WifiOffloadUserEntry> entries) {
+		Iterator<WifiOffloadUserEntry> iter = entries.iterator();
+		while (iter.hasNext()) {
+			WifiOffloadUserEntry r = iter.next();
+
+			// check if we find a similar rule
+			if (userId == r.userId) {
+				return true;
+			}
+		}
+
+		// no rule matched, so it doesn't exist in the rules
+		return false;
 	}
 	
 	
