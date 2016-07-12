@@ -1,10 +1,7 @@
 package net.floodlightcontroller.wifioffload;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
 
-import org.projectfloodlight.openflow.types.MacAddress;
 import org.restlet.data.Status;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
@@ -16,51 +13,36 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 
-
-public class WifiOffloadUserIdResource extends WifiOffloadResourceBase {
+public class WifiOffloadConNameResource extends WifiOffloadResourceBase {
 	// REST API to get or set local subnet mask -- this only makes sense for one subnet
 	// will remove later
 
 	private static final Logger log = LoggerFactory.getLogger(WifiOffloadUserIdResource.class);
 
 	@Get("json")
-	public Object handleRequest(String userIdStr) {
+	public Object handleRequest() {
 		IWifiOffloadService wifioffload = getWifiOffloadService();
-		
-		log.info("SEARCHING: "+userIdStr);
-		MacAddress userMacAddress = MacAddress.of(userIdStr);
-		long userId= userMacAddress.getLong();
-		boolean foundUserId=checkUserIdExists(userId,wifioffload.getUserEntries());
-		return "{\"userid\":\"" +userId+":"+ ((foundUserId)?"YES":"NO") + "\"}";
-	}	
+		return "{\"conname\":\"" + wifioffload.getConName() + "\"}";
+	}
+
 
 	@Post
 	public String handlePost(String fmJson) {
 		IWifiOffloadService wifioffload = getWifiOffloadService();
 
-		String userIdStr;
+		String conName;
 		try {
-			//log.info("fmJason:"+fmJson);
-			userIdStr = jsonExtractUserId(fmJson);
+			conName = jsonExtractConName(fmJson);
 		} catch (IOException e) {
 			log.error("Error parsing new subnet mask: " + fmJson, e);
 			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
 			return "{\"status\" : \"Error! Could not parse new subnet mask, see log for details.\"}";
 		}
-          
-				
-		MacAddress userMacAddress = MacAddress.of(userIdStr);
-		long userId= userMacAddress.getLong();
-		wifioffload.setUserId(userId);
-		boolean foundUserId=checkUserIdExists(userId,wifioffload.getUserEntries());
+
+		wifioffload.setConName(conName);
+
 		setStatus(Status.SUCCESS_OK);
-		if(foundUserId){
-			return ("{\"status\" : \"UserId Exist\"}");
-		}
-		else {
-			return ("{\"status\" : \"UserId Not Exist\"}");
-		}
-		
+		return ("{\"status\" : \"subnet mask set\"}");
 	}
 
 	/**
@@ -69,8 +51,8 @@ public class WifiOffloadUserIdResource extends WifiOffloadResourceBase {
 	 * @return The subnet mask
 	 * @throws IOException If there was an error parsing the JSON
 	 */
-	public static String jsonExtractUserId(String fmJson) throws IOException {
-		String userId = "";
+	public static String jsonExtractConName(String fmJson) throws IOException {
+		String conName = "";
 		MappingJsonFactory f = new MappingJsonFactory();
 		JsonParser jp;
 
@@ -86,40 +68,22 @@ public class WifiOffloadUserIdResource extends WifiOffloadResourceBase {
 		}
 
 		while (jp.nextToken() != JsonToken.END_OBJECT) {
-			
-			
 			if (jp.getCurrentToken() != JsonToken.FIELD_NAME) {
 				throw new IOException("Expected FIELD_NAME");
 			}
 
 			String n = jp.getCurrentName();
-		     //log.info("Current Name:"+n);
 			jp.nextToken();
 			if (jp.getText().equals(""))
 				continue;
 
-			if (n == "userid") {
-				userId = jp.getText();
+			if (n == "conname") {
+				conName = jp.getText();
 				break;
 			}
 		}
 
-		return userId;
-	}
-	
-	public static boolean checkUserIdExists(long userId, List<WifiOffloadUserEntry> entries) {
-		Iterator<WifiOffloadUserEntry> iter = entries.iterator();
-		while (iter.hasNext()) {
-			WifiOffloadUserEntry r = iter.next();
-
-			// check if we find a similar rule
-			if (userId == r.userId) {
-				return true;
-			}
-		}
-
-		// no rule matched, so it doesn't exist in the rules
-		return false;
+		return conName;
 	}
 	
 	

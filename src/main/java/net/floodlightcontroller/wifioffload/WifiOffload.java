@@ -58,6 +58,8 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	protected IRestApiService restApiService;
 	protected IStorageSourceService storageSource;
 	
+	protected WifiOffloadRestClient restClient;
+	
 	protected List<WifiOffloadUserEntry> entries; // protected by synchronized
 	protected boolean enabled;
 	
@@ -72,6 +74,8 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	
 	public String conName="default-name";
 	public static String ColumnNames[] = { COLUMN_USERID,COLUMN_DPID,COLUMN_PORTIN,COLUMN_USERMACADDR,COLUMN_USERIPADDR,COLUMN_AREAID, COLUMN_CONID };
+	public IPv4Address sdnConIpAddr = IPv4Address.of("127.0.0.1");
+	public IPv4Address peerSdnConIpAddr=IPv4Address.of("127.0.0.1");
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
@@ -131,6 +135,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		storageSource = context.getServiceImpl(IStorageSourceService.class);
 		entries = new ArrayList<WifiOffloadUserEntry>();
 		enabled = false;
+		restClient = new WifiOffloadRestClient();
 		logger.info("WIFI-OFFLOAD_INIT");
 		
 	}
@@ -143,6 +148,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		restApiService.addRestletRoutable(new WifiOffloadWebRoutable());
 		storageSource.createTable(TABLE_NAME, null);
 		storageSource.setTablePrimaryKeyName(TABLE_NAME, COLUMN_USERID);
+		new Thread(restClient).start();
 		this.entries = readRulesFromStorage();
 		
 	}
@@ -379,14 +385,38 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         }	
         
         entry.userId = entry.genID();
+        
         if(checkUserEntryExists(entry, entries)){
         	logger.info("User Entry ois Already There: "+entry.userMacAddress.toString());
         }else{
+        	
+        	logger.info("Searching User in Other SDN COntroller");        	
+        	checkForUserInOtherControllers(entry);
         	logger.info("Adding User Entry: "+entry.userMacAddress.toString());
-            addUserEntry(entry);
+        	addUserEntry(entry);
         }
             
 		return Command.CONTINUE;
+	}
+	
+	public static boolean checkForUserInOtherControllers(WifiOffloadUserEntry entry){
+		
+		//Check for Enabling
+		logger.info("CheckForUserInMulticast"+entry.userMacAddress.toString());
+		String urlStr = "http://127.0.0.1:8080/oulu/wifioffload/module/userid/json";
+		String [] paramName = {"userid"};
+		String userId = entry.userMacAddress.toString();
+		String [] paramVal = {userId};
+		try{
+			
+			String httpResponse=WifiOffloadRestClient.httpPost1(urlStr, paramName, paramVal);
+			logger.info("REST HTTP RESPONSE: "+httpResponse);
+		}
+		catch(Exception e){
+			logger.info(e.getMessage());
+		}
+		
+		return false;
 	}
 	
 	public static boolean checkUserEntryExists(WifiOffloadUserEntry entry, List<WifiOffloadUserEntry> entries) {
