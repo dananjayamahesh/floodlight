@@ -390,43 +390,94 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         
         if(checkUserEntryExists(entry, entries)){
         	//Check User within this SDN Controller
-        	logger.info("User entry is Aalready exist in this controller: "+entry.userMacAddress.toString());
+        	logger.info("User entry is already exist in this controller: "+entry.userMacAddress.toString());
         }else{
         	
         	logger.info("Searching User in Other SDN Controller");
+        	if(checkForControllerEnable()){
+        		
+        		if(checkForUserInOtherControllers(entry)){
+        			   
+        			addUserEntry(getUserFromRemoteController(entry));
+        			logger.info("User Found In The remote controller : Adding User Entry: "+entry.userMacAddress.toString());
+
+        			
+        		}else{
+        			addUserEntry(entry);
+        			logger.info("User Cannot Be Found In The remote controller : Adding User Entry: "+entry.userMacAddress.toString());
+        		}
+        	}
+        	else{
+    			addUserEntry(entry);
+    			logger.info("Remote Controller is not enabled  : Adding User Entry: "+entry.userMacAddress.toString());
+        	}       	
         	
-        	checkForUserInOtherControllers(entry);
-        	logger.info("Adding User Entry: "+entry.userMacAddress.toString());
-        	addUserEntry(entry);
         }
             
 		return Command.CONTINUE;
+	}
+	
+	public static WifiOffloadUserEntry getUserFromRemoteController(WifiOffloadUserEntry entry){
+		//Check Whether the user exist in that SDN Controller
+				String urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/user/json";
+				String [] paramName = {"userid"};
+				String userId = entry.userMacAddress.toString();
+				String [] paramVal = {userId};
+				WifiOffloadUserEntry userEntry=entry;
+				try{
+					
+					String httpResponse=WifiOffloadRestClient.httpPost1(urlStr, paramName, paramVal);
+					userEntry = WifiOffloadJsonExtract.jsonToUserEntry(httpResponse);
+					logger.info("REST HTTP POST RESPONSE: "+httpResponse+":UserId:"+userEntry.userMacAddress.toString());
+				}
+				catch(Exception e){
+					logger.info(e.getMessage());
+				}		
+				
+			
+				
+		return userEntry;
+	}
+	
+	
+	public static boolean checkForControllerEnable(){
+		String urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/module/status/json";
+		String status = "disable";
+		//Check whether the SDN Controller is Running
+		try{
+			String httpResponse=WifiOffloadRestClient.httpGet(urlStr);
+			 status = WifiOffloadJsonExtract.jsonExtractStatus(httpResponse);
+			logger.info("REST HTTP GET RESPONSE: "+httpResponse+":Status:"+status);
+			
+		}catch(Exception e){
+			logger.info(e.getMessage());
+		}
+		
+		if(status.equals("enabled"))
+		{
+			return true;
+		}else if (status.equals("disabled")) {
+			return false;
+		}else{
+			return false;
+		}
 	}
 	
 	public static boolean checkForUserInOtherControllers(WifiOffloadUserEntry entry){
 		
 		//Check for Enabling
 		logger.info("CheckForUserInMulticast"+entry.userMacAddress.toString());
-		String urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/module/status/json";
-		
-		//Check whether the SDN Controller is Running
-		try{
-			String httpResponse=WifiOffloadRestClient.httpGet(urlStr);
-			logger.info("REST HTTP GET RESPONSE: "+httpResponse);
-			
-		}catch(Exception e){
-			logger.info(e.getMessage());
-		}
 		
 		//Check Whether the user exist in that SDN Controller
-		urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/module/userid/json";
+		String urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/module/userid/json";
 		String [] paramName = {"userid"};
 		String userId = entry.userMacAddress.toString();
 		String [] paramVal = {userId};
 		try{
 			
 			String httpResponse=WifiOffloadRestClient.httpPost1(urlStr, paramName, paramVal);
-			logger.info("REST HTTP POST RESPONSE: "+httpResponse);
+			String status = WifiOffloadJsonExtract.jsonExtractStatus(httpResponse);
+			logger.info("REST HTTP POST RESPONSE: "+httpResponse+":UserId:"+status);
 		}
 		catch(Exception e){
 			logger.info(e.getMessage());
@@ -449,7 +500,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 
 		// no rule matched, so it doesn't exist in the rules
 		return false;
-	}
+	}	
 	
 
 }

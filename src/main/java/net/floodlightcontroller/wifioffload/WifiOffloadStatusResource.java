@@ -11,8 +11,8 @@ public class WifiOffloadStatusResource extends WifiOffloadResourceBase {
         IWifiOffloadService wifioffload = this.getWifiOffloadService();
 
 	if (wifioffload.isEnabled())
-	    return "{\"result\" : \"wifi-offload enabled\"}";
+	    return "{\"status\":\"enabled\"}";
 	else
-	    return "{\"result\" : \"wifi-offload disabled\"}";
+	    return "{\"status\":\"disabled\"}";
     }
 }

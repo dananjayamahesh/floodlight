@@ -55,10 +55,10 @@ public class WifiOffloadUserIdResource extends WifiOffloadResourceBase {
 		boolean foundUserId=checkUserIdExists(userId,wifioffload.getUserEntries());
 		setStatus(Status.SUCCESS_OK);
 		if(foundUserId){
-			return ("{\"status\" : \"UserId Exist\"}");
+			return ("{\"status\":\"exist\"}");
 		}
 		else {
-			return ("{\"status\" : \"UserId Not Exist\"}");
+			return ("{\"status\":\"notexist\"}");
 		}
 		
 	}
