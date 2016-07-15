@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -56,10 +57,8 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	protected Set<Long>macAddresses;
 	protected static Logger logger;
 	protected IRestApiService restApiService;
-	protected IStorageSourceService storageSource;
-	
-	protected WifiOffloadRestClient restClient;
-	
+	protected IStorageSourceService storageSource;	
+	protected WifiOffloadRestClient restClient;	
 	protected List<WifiOffloadUserEntry> entries; // protected by synchronized
 	protected boolean enabled;
 	
@@ -76,6 +75,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	public static String ColumnNames[] = { COLUMN_USERID,COLUMN_DPID,COLUMN_PORTIN,COLUMN_USERMACADDR,COLUMN_USERIPADDR,COLUMN_AREAID, COLUMN_CONID };
 	public IPv4Address sdnConIpAddr = IPv4Address.of("127.0.0.1");
 	public IPv4Address peerSdnConIpAddr=IPv4Address.of("127.0.0.1");
+	public List peerConIpAddrs = null;
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
@@ -148,7 +148,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		restApiService.addRestletRoutable(new WifiOffloadWebRoutable());
 		storageSource.createTable(TABLE_NAME, null);
 		storageSource.setTablePrimaryKeyName(TABLE_NAME, COLUMN_USERID);
-		new Thread(restClient).start();
+		//new Thread(restClient).start();
 		this.entries = readRulesFromStorage();
 		
 	}
@@ -364,6 +364,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		
         Long sourceMACHash = eth.getSourceMACAddress().getLong();
         
+        /*
         logger.info("MAHESH-HOST-MAC: "+sourceMACHash);        
         if (!macAddresses.contains(sourceMACHash)) {
             macAddresses.add(sourceMACHash);
@@ -371,6 +372,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
                     eth.getSourceMACAddress().toString(),
                     sw.getId().toString());
         }
+        */
         
         if(eth.getEtherType() == EthType.IPv4){
         	IPv4 ipv4 = (IPv4) eth.getPayload();
@@ -381,16 +383,18 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         	
         }
         else{
-        	
+        	logger.info("Packet is neither ARP nor IPV4");
         }	
         
         entry.userId = entry.genID();
         
         if(checkUserEntryExists(entry, entries)){
-        	logger.info("User Entry ois Already There: "+entry.userMacAddress.toString());
+        	//Check User within this SDN Controller
+        	logger.info("User entry is Aalready exist in this controller: "+entry.userMacAddress.toString());
         }else{
         	
-        	logger.info("Searching User in Other SDN COntroller");        	
+        	logger.info("Searching User in Other SDN Controller");
+        	
         	checkForUserInOtherControllers(entry);
         	logger.info("Adding User Entry: "+entry.userMacAddress.toString());
         	addUserEntry(entry);
@@ -403,14 +407,26 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		
 		//Check for Enabling
 		logger.info("CheckForUserInMulticast"+entry.userMacAddress.toString());
-		String urlStr = "http://127.0.0.1:8080/oulu/wifioffload/module/userid/json";
+		String urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/module/status/json";
+		
+		//Check whether the SDN Controller is Running
+		try{
+			String httpResponse=WifiOffloadRestClient.httpGet(urlStr);
+			logger.info("REST HTTP GET RESPONSE: "+httpResponse);
+			
+		}catch(Exception e){
+			logger.info(e.getMessage());
+		}
+		
+		//Check Whether the user exist in that SDN Controller
+		urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/module/userid/json";
 		String [] paramName = {"userid"};
 		String userId = entry.userMacAddress.toString();
 		String [] paramVal = {userId};
 		try{
 			
 			String httpResponse=WifiOffloadRestClient.httpPost1(urlStr, paramName, paramVal);
-			logger.info("REST HTTP RESPONSE: "+httpResponse);
+			logger.info("REST HTTP POST RESPONSE: "+httpResponse);
 		}
 		catch(Exception e){
 			logger.info(e.getMessage());
