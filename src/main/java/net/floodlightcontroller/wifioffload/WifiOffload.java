@@ -390,7 +390,14 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         }else{
         	
         	logger.info("Searching User in Other SDN Controller");
-        	if(WifiOffloadSDNControllers.checkForControllerEnable()){
+        	WifiOffloadUserEntry remoteEntry = WifiOffloadSDNControllers.searchUserInNetwork(controllers, entry);
+        	
+        	if(remoteEntry != null){
+        		remoteEntry.sdnConId = this.controller.getId();
+        		remoteEntry.areaId   = this.controller.getAreadId();
+        		addUserEntry(remoteEntry);
+        	}
+        	/*if(WifiOffloadSDNControllers.checkForControllerEnable()){
         		
         		if(WifiOffloadSDNControllers.checkForUserInOtherControllers(entry)){
         			   
@@ -402,7 +409,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         			addUserEntry(entry);
         			logger.info("User Cannot Be Found In The remote controller : Adding User Entry: "+entry.userMacAddress.toString());
         		}
-        	}
+        	}*/
         	else{
     			addUserEntry(entry);
     			logger.info("Remote Controller is not enabled  : Adding User Entry: "+entry.userMacAddress.toString());

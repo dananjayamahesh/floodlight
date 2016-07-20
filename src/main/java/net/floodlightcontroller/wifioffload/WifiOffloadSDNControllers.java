@@ -57,13 +57,13 @@ public class WifiOffloadSDNControllers {
 				isEnabled = true;
 			}
 			else{
-				isEnabled =WifiOffloadSDNControllers.checkForControllerEnable();
+				isEnabled =WifiOffloadSDNControllers.checkForControllerEnable(controller);
 				controller.setEnabled(isEnabled);
 			}
 			
 			if(isEnabled){
-				if(WifiOffloadSDNControllers.checkForUserInOtherControllers(entry)){
-					remoteEntry=WifiOffloadSDNControllers.getUserFromRemoteController(entry);
+				if(WifiOffloadSDNControllers.checkForUserInOtherControllers(controller,entry)){
+					remoteEntry=WifiOffloadSDNControllers.getUserFromRemoteController(controller,entry);
 					return remoteEntry;
 				}else{
 					remoteEntry= null;
@@ -80,9 +80,9 @@ public class WifiOffloadSDNControllers {
 	}
 	
 	
-	public static WifiOffloadUserEntry getUserFromRemoteController(WifiOffloadUserEntry entry){
+	public static WifiOffloadUserEntry getUserFromRemoteController(WifiOffloadSDNController controller,WifiOffloadUserEntry entry){
 		//Check Whether the user exist in that SDN Controller
-				String urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/user/json";
+				String urlStr = "http://"+controller.getIpAddress().toString()+":8080/oulu/wifioffload/user/json";
 				String [] paramName = {"userid"};
 				String userId = entry.userMacAddress.toString();
 				String [] paramVal = {userId};
@@ -103,8 +103,8 @@ public class WifiOffloadSDNControllers {
 	}
 	
 	
-	public static boolean checkForControllerEnable(){
-		String urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/module/status/json";
+	public static boolean checkForControllerEnable(WifiOffloadSDNController controller){
+		String urlStr = "http://"+controller.getIpAddress().toString()+":8080/oulu/wifioffload/module/status/json";
 		String status = "disable";
 		//Check whether the SDN Controller is Running
 		try{
@@ -126,13 +126,13 @@ public class WifiOffloadSDNControllers {
 		}
 	}
 	
-	public static boolean checkForUserInOtherControllers(WifiOffloadUserEntry entry){
+	public static boolean checkForUserInOtherControllers(WifiOffloadSDNController controller,WifiOffloadUserEntry entry){
 		
 		//Check for Enabling
 		logger.info("CheckForUserInMulticast"+entry.userMacAddress.toString());
 		
 		//Check Whether the user exist in that SDN Controller
-		String urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/module/userid/json";
+		String urlStr = "http://"+controller.getIpAddress().toString()+":8080/oulu/wifioffload/module/userid/json";
 		String [] paramName = {"userid"};
 		String userId = entry.userMacAddress.toString();
 		String [] paramVal = {userId};

@@ -1,5 +1,7 @@
 package net.floodlightcontroller.wifioffload;
 
+import java.util.Scanner;
+
 import org.projectfloodlight.openflow.types.IPv4Address;
 import org.projectfloodlight.openflow.types.MacAddress;
 
@@ -21,10 +23,11 @@ public class WifiOffloadSDNController implements Comparable<WifiOffloadSDNContro
 	 private int qosFactor;
 	 private int userFactor;
 	 
-	public  WifiOffloadSDNController(long id, String name,String description,long areadId,MacAddress macAddress, IPv4Address ipAddress, int tcpPort, long numMobileUsers, long maxNumMobileUsers, boolean enabled ){
+	public  WifiOffloadSDNController(long id, String name,String description,long areaId,MacAddress macAddress, IPv4Address ipAddress, int tcpPort, long numMobileUsers, long maxNumMobileUsers, boolean enabled ){
 		 this.id = id;
 		 this.name = name;
 		 this.description = description;
+		 this.areaId = areaId;
 		 this.macAddress = macAddress;
 		 this.ipAddress  = ipAddress;
 		 this.numMobileUsers = numMobileUsers;
@@ -37,6 +40,24 @@ public class WifiOffloadSDNController implements Comparable<WifiOffloadSDNContro
 		 this.priority =0;
 		 this.userFactor =0;
 	 }
+	
+	public WifiOffloadSDNController createController(){
+		Scanner scn = new Scanner (System.in);
+		System.out.println("Enter ID, NAME, DESCRIPTION, AREAID, MAC_ADDRESS, IP_ADDRESS, TCP_PORT, NUMBER_OF_USERS, MAX_NUMBER_OF_USERS, ENABLED");
+		long id= scn.nextLong();
+		String name = scn.next();
+		String description=scn.next();
+		long areaId= scn.nextLong();
+		MacAddress macAddress = MacAddress.of(scn.next());
+		IPv4Address ipAddress = IPv4Address.of(scn.next());
+		int tcpPort = scn.nextInt();
+		long numMobileUsers = scn.nextLong();
+		long maxNumMobileUsers = scn.nextLong();
+		boolean enabled = scn.nextBoolean();
+		
+		return new WifiOffloadSDNController(id, name, description, areaId, macAddress, ipAddress, tcpPort, numMobileUsers, maxNumMobileUsers, enabled);
+		
+	}
 	
 	public long genID(){
 		return 0;
