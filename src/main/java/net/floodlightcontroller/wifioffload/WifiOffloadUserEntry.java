@@ -19,8 +19,8 @@ public class WifiOffloadUserEntry implements Comparable<WifiOffloadUserEntry> {
 	public OFPort portIn;
 	public MacAddress userMacAddress;
 	public IPv4Address userIpAddress;
-	public int areaId;
-	public int sdnConId;
+	public long areaId;
+	public long sdnConId;
 	
 	public boolean anyDpId;
 	public boolean anyPortIn;

@@ -54,13 +54,17 @@ import org.slf4j.LoggerFactory;
 public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFloodlightModule {
     
 	protected IFloodlightProviderService floodlightProvider;
-	protected Set<Long>macAddresses;
+	
 	protected static Logger logger;
 	protected IRestApiService restApiService;
 	protected IStorageSourceService storageSource;	
 	protected WifiOffloadRestClient restClient;	
 	protected List<WifiOffloadUserEntry> entries; // protected by synchronized
 	protected boolean enabled;
+	
+	protected WifiOffloadSDNController controller;
+	protected WifiOffloadSDNControllers controllers;
+	
 	
 	public static final String TABLE_NAME = "controller_wifioffload_userentries";
 	public static final String COLUMN_USERID = "userid";
@@ -73,9 +77,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	
 	public String conName="default-name";
 	public static String ColumnNames[] = { COLUMN_USERID,COLUMN_DPID,COLUMN_PORTIN,COLUMN_USERMACADDR,COLUMN_USERIPADDR,COLUMN_AREAID, COLUMN_CONID };
-	public IPv4Address sdnConIpAddr = IPv4Address.of("127.0.0.1");
-	public IPv4Address peerSdnConIpAddr=IPv4Address.of("127.0.0.1");
-	public List peerConIpAddrs = null;
+	
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
@@ -129,13 +131,20 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	public void init(FloodlightModuleContext context) throws FloodlightModuleException {
 		// TODO Auto-generated method stub
 		floodlightProvider = context.getServiceImpl(IFloodlightProviderService.class);
-	    macAddresses = new ConcurrentSkipListSet<Long>();
+	   
 	    logger = LoggerFactory.getLogger(WifiOffload.class);
 	    restApiService = context.getServiceImpl(IRestApiService.class);
 		storageSource = context.getServiceImpl(IStorageSourceService.class);
 		entries = new ArrayList<WifiOffloadUserEntry>();
 		enabled = false;
 		restClient = new WifiOffloadRestClient();
+		
+		//Starting The SDN Controllers Stack
+		controllers= new WifiOffloadSDNControllers();
+		controller = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:33"), IPv4Address.of("192.248.10.78"), 8080, 0,1000, false);
+		WifiOffloadSDNController peerController = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:44"), IPv4Address.of("192.248.10.78"), 8080, 0,1000, false);
+		controllers.addController(peerController);
+		controllers.setLocalController(controller);
 		logger.info("WIFI-OFFLOAD_INIT");
 		
 	}
@@ -216,9 +225,9 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 						}  else if (key.equals(COLUMN_USERIPADDR)) {
 							r.userIpAddress = IPv4Address.of(Integer.parseInt((String) row.get(COLUMN_USERIPADDR)));
 						} else if (key.equals(COLUMN_AREAID)) {
-							r.areaId = Integer.parseInt((String) row.get(COLUMN_AREAID));
+							r.areaId = Long.parseLong((String) row.get(COLUMN_AREAID));
 						} else if (key.equals(COLUMN_CONID)) {
-							r.sdnConId =Integer.parseInt((String) row.get(COLUMN_CONID));
+							r.sdnConId =Long.parseLong((String) row.get(COLUMN_CONID));
 						}
 					}
 						
@@ -321,8 +330,8 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		entryNew.put(COLUMN_PORTIN, Integer.toString(entry.portIn.getPortNumber()));
 		entryNew.put(COLUMN_USERMACADDR, Long.toString(entry.userMacAddress.getLong()));
 		entryNew.put(COLUMN_USERIPADDR, Integer.toString(entry.userIpAddress.getInt()));
-		entryNew.put(COLUMN_AREAID, Integer.toString(entry.areaId));
-		entryNew.put(COLUMN_CONID, Integer.toString(entry.sdnConId));
+		entryNew.put(COLUMN_AREAID, Long.toString(entry.areaId));
+		entryNew.put(COLUMN_CONID, Long.toString(entry.sdnConId));
 		storageSource.insertRow(TABLE_NAME, entryNew);
 	}
 
@@ -362,25 +371,12 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		
 		logger.info("PACKET-In REASON: "+pi.getReason().toString());
 		
-        Long sourceMACHash = eth.getSourceMACAddress().getLong();
-        
-        /*
-        logger.info("MAHESH-HOST-MAC: "+sourceMACHash);        
-        if (!macAddresses.contains(sourceMACHash)) {
-            macAddresses.add(sourceMACHash);
-            logger.info("MAC Address: {} seen on switch: {}",
-                    eth.getSourceMACAddress().toString(),
-                    sw.getId().toString());
-        }
-        */
-        
-        if(eth.getEtherType() == EthType.IPv4){
+       if(eth.getEtherType() == EthType.IPv4){
         	IPv4 ipv4 = (IPv4) eth.getPayload();
         	entry.userIpAddress = ipv4.getSourceAddress();
         }
         else if (eth.getEtherType() == EthType.ARP){
-        	ARP arp = (ARP)eth.getPayload();
-        	
+        	ARP arp = (ARP)eth.getPayload();        	
         }
         else{
         	logger.info("Packet is neither ARP nor IPV4");
@@ -394,11 +390,11 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         }else{
         	
         	logger.info("Searching User in Other SDN Controller");
-        	if(checkForControllerEnable()){
+        	if(WifiOffloadSDNControllers.checkForControllerEnable()){
         		
-        		if(checkForUserInOtherControllers(entry)){
+        		if(WifiOffloadSDNControllers.checkForUserInOtherControllers(entry)){
         			   
-        			addUserEntry(getUserFromRemoteController(entry));
+        			addUserEntry(WifiOffloadSDNControllers.getUserFromRemoteController(entry));
         			logger.info("User Found In The remote controller : Adding User Entry: "+entry.userMacAddress.toString());
 
         			
@@ -417,76 +413,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		return Command.CONTINUE;
 	}
 	
-	public static WifiOffloadUserEntry getUserFromRemoteController(WifiOffloadUserEntry entry){
-		//Check Whether the user exist in that SDN Controller
-				String urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/user/json";
-				String [] paramName = {"userid"};
-				String userId = entry.userMacAddress.toString();
-				String [] paramVal = {userId};
-				WifiOffloadUserEntry userEntry=entry;
-				try{
-					
-					String httpResponse=WifiOffloadRestClient.httpPost1(urlStr, paramName, paramVal);
-					userEntry = WifiOffloadJsonExtract.jsonToUserEntry(httpResponse);
-					logger.info("REST HTTP POST RESPONSE: "+httpResponse+":UserId:"+userEntry.userMacAddress.toString());
-				}
-				catch(Exception e){
-					logger.info(e.getMessage());
-				}		
-				
-			
-				
-		return userEntry;
-	}
-	
-	
-	public static boolean checkForControllerEnable(){
-		String urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/module/status/json";
-		String status = "disable";
-		//Check whether the SDN Controller is Running
-		try{
-			String httpResponse=WifiOffloadRestClient.httpGet(urlStr);
-			 status = WifiOffloadJsonExtract.jsonExtractStatus(httpResponse);
-			logger.info("REST HTTP GET RESPONSE: "+httpResponse+":Status:"+status);
-			
-		}catch(Exception e){
-			logger.info(e.getMessage());
-		}
-		
-		if(status.equals("enabled"))
-		{
-			return true;
-		}else if (status.equals("disabled")) {
-			return false;
-		}else{
-			return false;
-		}
-	}
-	
-	public static boolean checkForUserInOtherControllers(WifiOffloadUserEntry entry){
-		
-		//Check for Enabling
-		logger.info("CheckForUserInMulticast"+entry.userMacAddress.toString());
-		
-		//Check Whether the user exist in that SDN Controller
-		String urlStr = "http://"+"127.0.0.1"+":8080/oulu/wifioffload/module/userid/json";
-		String [] paramName = {"userid"};
-		String userId = entry.userMacAddress.toString();
-		String [] paramVal = {userId};
-		try{
-			
-			String httpResponse=WifiOffloadRestClient.httpPost1(urlStr, paramName, paramVal);
-			String status = WifiOffloadJsonExtract.jsonExtractStatus(httpResponse);
-			logger.info("REST HTTP POST RESPONSE: "+httpResponse+":UserId:"+status);
-		}
-		catch(Exception e){
-			logger.info(e.getMessage());
-		}
-		
-		return false;
-	}
-	
-	public static boolean checkUserEntryExists(WifiOffloadUserEntry entry, List<WifiOffloadUserEntry> entries) {
+		public static boolean checkUserEntryExists(WifiOffloadUserEntry entry, List<WifiOffloadUserEntry> entries) {
 		Iterator<WifiOffloadUserEntry> iter = entries.iterator();
 		while (iter.hasNext()) {
 		

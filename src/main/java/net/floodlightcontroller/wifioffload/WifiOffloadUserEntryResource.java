@@ -194,7 +194,7 @@ public class WifiOffloadUserEntryResource extends ServerResource {
 				else if (n.equalsIgnoreCase("areaid")) {
 					entry.anyAreaId = false;
 					try {
-						entry.areaId = Integer.parseInt(jp.getText());
+						entry.areaId = Long.parseLong(jp.getText());
 					} catch (NumberFormatException e) {
 						log.error("Unable to parse area ID: {}", jp.getText());
 						//TODO should return some error message via HTTP message
@@ -204,7 +204,7 @@ public class WifiOffloadUserEntryResource extends ServerResource {
 				else if (n.equalsIgnoreCase("conid")) {
 					entry.anySdnConId = false;
 					try {
-						entry.sdnConId = Integer.parseInt(jp.getText());
+						entry.sdnConId = Long.parseLong(jp.getText());
 					} catch (NumberFormatException e) {
 						log.error("Unable to parse SDN controller ID: {}", jp.getText());
 						//TODO should return some error message via HTTP message

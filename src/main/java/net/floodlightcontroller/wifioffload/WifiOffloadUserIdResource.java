@@ -43,9 +43,9 @@ public class WifiOffloadUserIdResource extends WifiOffloadResourceBase {
 			//log.info("fmJason:"+fmJson);
 			userIdStr = jsonExtractUserId(fmJson);
 		} catch (IOException e) {
-			log.error("Error parsing new subnet mask: " + fmJson, e);
+			log.error("Error parsing new user id: " + fmJson, e);
 			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-			return "{\"status\" : \"Error! Could not parse new subnet mask, see log for details.\"}";
+			return "{\"status\" : \"Error! Could not parse new user id, see log for details.\"}";
 		}
           
 				
