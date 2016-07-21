@@ -56,6 +56,8 @@ public class WifiOffloadUserResource extends ServerResource {
 		String status = null;
 		WifiOffloadUserEntry n = null;
 		n = getUserEntryById(entry,wifioffload.getUserEntries());
+		log.info("Remove User "+entry.userMacAddress.toString()+" From This Controller");
+		this.remove(fmJson);
 		return n;
 	}
 

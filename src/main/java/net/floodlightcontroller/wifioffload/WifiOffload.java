@@ -62,8 +62,8 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	protected List<WifiOffloadUserEntry> entries; // protected by synchronized
 	protected boolean enabled;
 	
-	protected WifiOffloadSDNController controller;
-	protected WifiOffloadSDNControllers controllers;
+	public WifiOffloadSDNController controller;
+	public WifiOffloadSDNControllers controllers;
 	
 	
 	public static final String TABLE_NAME = "controller_wifioffload_userentries";
