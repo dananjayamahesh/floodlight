@@ -158,6 +158,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	public void startUp(FloodlightModuleContext context) throws FloodlightModuleException {
 		// TODO Auto-generated method stub
 		logger.info("WIFI-OFFLOAD_STARTUP");
+		logger.info("Starting SDN Controller "+controller.getIpAddress().toString());
 		floodlightProvider.addOFMessageListener(OFType.PACKET_IN, this);
 		restApiService.addRestletRoutable(new WifiOffloadWebRoutable());
 		storageSource.createTable(TABLE_NAME, null);
