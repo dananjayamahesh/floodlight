@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Scanner;
 
 import org.projectfloodlight.openflow.protocol.OFMessage;
 import org.projectfloodlight.openflow.protocol.OFPacketIn;
@@ -141,8 +141,13 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		
 		//Starting The SDN Controllers Stack
 		controllers= new WifiOffloadSDNControllers();
-		controller = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:33"), IPv4Address.of("192.248.10.78"), 8080, 0,1000, false);
-		WifiOffloadSDNController peerController = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:44"), IPv4Address.of("192.248.10.78"), 8080, 0,1000, false);
+		
+		Scanner scn = new Scanner(System.in);
+		String ipStr= scn.next();
+		String peerIpStr = scn.next();
+		scn.close();
+		controller = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:33"), IPv4Address.of(ipStr), 8080, 0,1000, false);
+		WifiOffloadSDNController peerController = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:44"), IPv4Address.of(peerIpStr), 8080, 0,1000, false);
 		controllers.addController(peerController);
 		controllers.setLocalController(controller);
 		logger.info("WIFI-OFFLOAD_INIT");

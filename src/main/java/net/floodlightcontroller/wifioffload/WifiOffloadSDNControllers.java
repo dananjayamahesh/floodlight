@@ -11,8 +11,8 @@ public class WifiOffloadSDNControllers {
  
 	private TreeSet<WifiOffloadSDNController> controllers = new TreeSet<WifiOffloadSDNController>();
 	private WifiOffloadSDNController localController;
-	private int numControllers;
-	protected static Logger logger;
+	private int numControllers =0;
+	protected static Logger logger = LoggerFactory.getLogger(WifiOffloadSDNControllers.class); ;
 	
 	public WifiOffloadSDNControllers(){
 		this.numControllers =0;
@@ -46,31 +46,41 @@ public class WifiOffloadSDNControllers {
 	}
 	
 	public static WifiOffloadUserEntry searchUserInNetwork(WifiOffloadSDNControllers controllers,WifiOffloadUserEntry entry){
-		
+	  
+		logger.info("Starting Searching The Network for user: "+entry.userMacAddress.toString());
 		Iterator<WifiOffloadSDNController>iter = controllers.getControllers();
 		WifiOffloadUserEntry remoteEntry=null;
 		while(iter.hasNext()){
 			WifiOffloadSDNController controller = iter.next();
-			
+			logger.info("COntroller "+controller.getIpAddress().toString()+" processing....");
 			boolean isEnabled = false;
 			if(controller.isEnabled()){
+				logger.info("Controller "+controller.getIpAddress().toString()+" is already Enabled");
 				isEnabled = true;
 			}
 			else{
+				logger.info("Send A Enable Request To Controller: "+controller.getIpAddress().toString());
 				isEnabled =WifiOffloadSDNControllers.checkForControllerEnable(controller);
 				controller.setEnabled(isEnabled);
 			}
 			
 			if(isEnabled){
 				if(WifiOffloadSDNControllers.checkForUserInOtherControllers(controller,entry)){
+					
+					logger.info("User "+entry.userMacAddress.toString()+" Found in Controller: "+controller.getIpAddress().toString());
+					long startTime = System.nanoTime();
 					remoteEntry=WifiOffloadSDNControllers.getUserFromRemoteController(controller,entry);
+					long endTime = System.nanoTime();
+					logger.info("Time Taken for Offloading: "+(((double)(endTime-startTime))/1000000000));
 					return remoteEntry;
 				}else{
+					logger.info("User "+entry.userMacAddress.toString()+" Not Found in Controller: "+controller.getIpAddress().toString());
 					remoteEntry= null;
 					continue;
 				}
 			}
 			else{
+				logger.info("Controller "+controller.getIpAddress().toString()+" is not enabled");
 				remoteEntry= null;
 				continue;
 			}
