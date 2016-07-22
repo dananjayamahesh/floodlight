@@ -50,6 +50,9 @@ public class WifiOffloadJsonExtract {
 				status = jp.getText();
 				break;
 			}
+			else if(n=="id"){
+			   log.info("IDDDDD: "+jp.getText());
+			}
 		}
 
 		return status;
@@ -94,6 +97,7 @@ public class WifiOffloadJsonExtract {
 
 		return status;
 	}
+	
 	
 	
 	public static WifiOffloadUserEntry jsonToUserEntry(String fmJson) {
@@ -203,6 +207,147 @@ public class WifiOffloadJsonExtract {
 
 		return entry;
 	}
+	
+	
+	
+	//Extract Controller from JSON
+	
+	public static WifiOffloadSDNController jsonToController(String fmJson) {
+		WifiOffloadSDNController controller = new WifiOffloadSDNController();
+		log.info("Start JsonToController COnversion");
+		MappingJsonFactory f = new MappingJsonFactory();
+		JsonParser jp;
+		try {
+			try {
+				jp = f.createParser(fmJson);
+			} catch (JsonParseException e) {
+				throw new IOException(e);
+			}
+
+			jp.nextToken();
+			if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
+				throw new IOException("Expected START_OBJECT");
+			}
+
+			while (jp.nextToken() != JsonToken.END_OBJECT) {
+				if (jp.getCurrentToken() != JsonToken.FIELD_NAME) {
+					throw new IOException("Expected FIELD_NAME");
+				}
+
+				String n = jp.getCurrentName();
+				jp.nextToken();
+				if (jp.getText().equals("")) {
+					continue;
+				}
+
+				// This is currently only applicable for remove().  In store(), ruleid takes a random number
+				if (n.equalsIgnoreCase("id")) {
+					try {
+						controller.id = Long.parseLong(jp.getText());
+					} catch (IllegalArgumentException e) {
+						log.error("Unable to parse ID: {}", jp.getText());
+					}
+				}
+
+				else if (n.equalsIgnoreCase("name")) {
+					
+					try {
+						controller.name = jp.getText();
+					} catch (NumberFormatException e) {
+						log.error("Unable to parse name: {}", jp.getText());
+						//TODO should return some error message via HTTP message
+					}
+				}
+				
+                else if (n.equalsIgnoreCase("description")) {
+					
+					try {
+						controller.description = jp.getText();
+					} catch (NumberFormatException e) {
+						log.error("Unable to parse description: {}", jp.getText());
+						//TODO should return some error message via HTTP message
+					}
+				}
+				
+				
+				// This assumes user having dpid info for involved switches
+				else if (n.equalsIgnoreCase("areaid")) {
+					
+					try {
+						controller.areaId = Long.parseLong(jp.getText());
+					} catch (NumberFormatException e) {
+						log.error("Unable to parse Area ID: {}", jp.getText());
+						//TODO should return some error message via HTTP message
+					}
+				}
+
+				else if (n.equalsIgnoreCase("macaddress")) {
+					
+					try {
+						controller.macAddress = MacAddress.of(Long.parseLong(jp.getText()));
+					} catch (NumberFormatException e) {
+						log.error("Unable to parse MAC Address: {}", jp.getText());
+						//TODO should return some error message via HTTP message
+					}
+				}
+				
+				else if (n.equalsIgnoreCase("ipaddress")) {
+					
+					try {
+						controller.ipAddress = IPv4Address.of(Integer.parseInt(jp.getText()));
+					} catch (NumberFormatException e) {
+						log.error("Unable to parse MAC Address: {}", jp.getText());
+						//TODO should return some error message via HTTP message
+					}
+				}
+
+				else if (n.equalsIgnoreCase("users")) {
+					
+					try {
+						controller.numMobileUsers = Long.parseLong(jp.getText());
+					} catch (NumberFormatException e) {
+						log.error("Unable to parse area ID: {}", jp.getText());
+						//TODO should return some error message via HTTP message
+					}
+				}
+				
+               else if (n.equalsIgnoreCase("maxusers")) {
+					
+					try {
+						controller.maxNumMobileUsers = Long.parseLong(jp.getText());
+					} catch (NumberFormatException e) {
+						log.error("Unable to parse area ID: {}", jp.getText());
+						//TODO should return some error message via HTTP message
+					}
+				}
+				
+               else if (n.equalsIgnoreCase("enabled")) {
+					
+					try {
+						controller.enabled = Boolean.parseBoolean(jp.getText());
+					} catch (NumberFormatException e) {
+						log.error("Unable to parse Enabled: {}", jp.getText());
+						//TODO should return some error message via HTTP message
+					}
+				}
+
+				else if (n.equalsIgnoreCase("contype")) {
+					
+					try {
+						controller.conType = Integer.parseInt(jp.getText());
+					} catch (NumberFormatException e) {
+						log.error("Unable to parse SDN controller Type: {}", jp.getText());
+						//TODO should return some error message via HTTP message
+					}
+				}				
+			}
+		} catch (IOException e) {
+			log.error("Unable to parse JSON string: {}", e);
+		}
+
+		return controller;
+	}
+
 
 
 

@@ -25,7 +25,7 @@ public class WifiOffloadWebRoutable implements RestletRoutable {
         router.attach("/module/enable/json",       WifiOffloadEnableResource.class);
         router.attach("/module/disable/json",      WifiOffloadDisableResource.class);
         router.attach("/module/userid/json",       WifiOffloadUserIdResource.class);
-        router.attach("/module/conname/json",       WifiOffloadConNameResource.class);
+        router.attach("/module/controller/json",       WifiOffloadControllerResource.class);
         router.attach("/module/storageRules/json", WifiOffloadStorageRulesResource.class);
 
         router.attach("/entries/json",              WifiOffloadUserEntryResource.class);

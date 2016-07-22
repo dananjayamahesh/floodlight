@@ -5,25 +5,52 @@ import java.util.Scanner;
 import org.projectfloodlight.openflow.types.IPv4Address;
 import org.projectfloodlight.openflow.types.MacAddress;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonSerialize(using=WifiOffloadControllerSerializer.class)
 public class WifiOffloadSDNController implements Comparable<WifiOffloadSDNController> {
 
-	 private long id;
-	 private String name;
-	 private String description;
-	 private long areaId;
-	 private MacAddress macAddress;
-	 private IPv4Address ipAddress;
-	 private long numMobileUsers;
-	 private long maxNumMobileUsers;
-	 private boolean enabled;
-	 private int tcpPort;	 
-	 private int costFactor;
-	 private int priority;
-	 private int congestionFactor;
-	 private int qosFactor;
-	 private int userFactor;
+	 public long id;
+	 public String name;
+	 public String description;
+	 public long areaId;
+	 public MacAddress macAddress;
+	 public IPv4Address ipAddress;
+	 public long numMobileUsers;
+	 public long maxNumMobileUsers;
+	 public boolean enabled;
+	 public int conType=0;
+	 	 
+	 public int tcpPort;	 
+	 public int costFactor;
+	 public int priority;
+	 public int congestionFactor;
+	 public int qosFactor;
+	 public int userFactor;
 	 
-	public  WifiOffloadSDNController(long id, String name,String description,long areaId,MacAddress macAddress, IPv4Address ipAddress, int tcpPort, long numMobileUsers, long maxNumMobileUsers, boolean enabled ){
+	 public static int CONTYPE_WIFI = 0;
+	 public static int CONTYPE_LTE  = 1;
+	 public static int CONTYPE_3G 	= 2;
+	 
+	 
+	 
+	 //Controller Type
+	 private CONTYPE controllerType = CONTYPE.WIFI;
+	 
+	 public enum CONTYPE {WIFI(0),LTE(1),C3G(2),C2G(3),C1G(4);
+	     private int conType;
+	     
+	     CONTYPE(int conType){
+	    	 this.conType = conType;
+	     }
+	     
+	     public String getType(){
+	    	 return "Controller Type :"+this.conType;
+	     }
+	     
+	 }
+	 
+	public  WifiOffloadSDNController(long id, String name,String description,long areaId,MacAddress macAddress, IPv4Address ipAddress, int tcpPort, long numMobileUsers, long maxNumMobileUsers, boolean enabled, int conType ){
 		 this.id = id;
 		 this.name = name;
 		 this.description = description;
@@ -39,24 +66,39 @@ public class WifiOffloadSDNController implements Comparable<WifiOffloadSDNContro
 		 this.congestionFactor = 0;
 		 this.priority =0;
 		 this.userFactor =0;
+		 //Controller Type For Subscriber Density
+		 this.conType = conType;
 	 }
 	
-	public WifiOffloadSDNController createController(){
-		Scanner scn = new Scanner (System.in);
-		System.out.println("Enter ID, NAME, DESCRIPTION, AREAID, MAC_ADDRESS, IP_ADDRESS, TCP_PORT, NUMBER_OF_USERS, MAX_NUMBER_OF_USERS, ENABLED");
-		long id= scn.nextLong();
-		String name = scn.next();
-		String description=scn.next();
-		long areaId= scn.nextLong();
-		MacAddress macAddress = MacAddress.of(scn.next());
-		IPv4Address ipAddress = IPv4Address.of(scn.next());
-		int tcpPort = scn.nextInt();
-		long numMobileUsers = scn.nextLong();
-		long maxNumMobileUsers = scn.nextLong();
-		boolean enabled = scn.nextBoolean();
-		
-		return new WifiOffloadSDNController(id, name, description, areaId, macAddress, ipAddress, tcpPort, numMobileUsers, maxNumMobileUsers, enabled);
-		
+	public WifiOffloadSDNController(){
+		 this.id = 0;
+		 this.name = "";
+		 this.description = "";
+		 this.areaId = 0;
+		 this.macAddress = MacAddress.of("00:00:00:00:00:00");
+		 this.ipAddress  = IPv4Address.of("0.0.0.0");
+		 this.numMobileUsers = 0;
+		 this.maxNumMobileUsers = 0;
+		 this.enabled = false;
+		 this.tcpPort = 0;
+		 this.costFactor =0;
+		 this.qosFactor =0;
+		 this.congestionFactor = 0;
+		 this.priority =0;
+		 this.userFactor =0;
+		 //Controller Type For Subscriber Density
+		 this.conType = 0; //default Wi-FI
+
+	}
+	
+	
+	
+	public void setConType(int conType){
+		this.conType = conType;
+	}
+	
+	public int getConType(){
+		return this.conType;
 	}
 	
 	public long genID(){
@@ -194,6 +236,6 @@ public class WifiOffloadSDNController implements Comparable<WifiOffloadSDNContro
 	}
 	
 	public String toString(){
-		return "ID:"+id+" ,IPAddress:"+this.ipAddress.toString();
+		return "id = "+this.id+"\narea-id = "+this.areaId+"\nname = "+this.name+"\nipaddress = "+this.ipAddress.toString()+"\nmac-address = "+this.macAddress.toString()+"\nnum-users = "+this.numMobileUsers+"\nmax-num-users = "+this.maxNumMobileUsers+"\nenabled = "+this.enabled+"\ntype = "+this.conType;
 	}
 }

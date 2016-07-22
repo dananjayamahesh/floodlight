@@ -18,7 +18,9 @@ public class WifiOffloadRestClient implements Runnable {
 	
 	
 	public static String httpGet(String urlStr) throws IOException {
-		  URL url = new URL(urlStr);
+		long startTime=System.nanoTime();  
+		
+		URL url = new URL(urlStr);
 		  
 		  HttpURLConnection conn =
 		      (HttpURLConnection) url.openConnection();
@@ -38,12 +40,15 @@ public class WifiOffloadRestClient implements Runnable {
 		  rd.close();
 
 		  conn.disconnect();
+		  
+		  long endTime = System.nanoTime();
+		   logger.info("Time Taken for Check REST Operation: "+(((double)(endTime-startTime))/1000000000));
 		  return sb.toString();
 		}
 	
 	public static String httpGet(String urlStr,String paramStr) throws IOException {
-		  URL url = new URL(urlStr);
-		  
+		 long startTime = System.nanoTime();
+		  URL url = new URL(urlStr);		  
 		  HttpURLConnection conn =
 		      (HttpURLConnection) url.openConnection();
 		  conn.setRequestMethod("GET");
@@ -73,12 +78,16 @@ public class WifiOffloadRestClient implements Runnable {
 		  rd.close();
 
 		  conn.disconnect();
+		  long endTime = System.nanoTime();
+		   logger.info("Time Taken for Check REST Operation: "+(((double)(endTime-startTime))/1000000000));
+
 		  return sb.toString();
 		}
 	
 	public static String httpPost(String urlStr, String[] paramName,
 			String[] paramVal) throws Exception {
-			  URL url = new URL(urlStr);
+			  long startTime = System.nanoTime();
+		      URL url = new URL(urlStr);
 			  HttpURLConnection conn =
 			      (HttpURLConnection) url.openConnection();
 			  conn.setRequestMethod("POST");
@@ -116,13 +125,19 @@ public class WifiOffloadRestClient implements Runnable {
 			  rd.close();
 
 			  conn.disconnect();
+			  
+			  long endTime = System.nanoTime();
+			   logger.info("Time Taken for Check REST Operation: "+(((double)(endTime-startTime))/1000000000));
+
 			  return sb.toString();
 			}
 
 	
 	public static String httpPost1(String urlStr, String[] paramName,
 			String[] paramVal) throws Exception {
-			  URL url = new URL(urlStr);
+			  
+		long startTime = System.nanoTime();
+		      URL url = new URL(urlStr);
 			  HttpURLConnection conn =
 			      (HttpURLConnection) url.openConnection();
 			  conn.setRequestMethod("POST");
@@ -162,6 +177,10 @@ public class WifiOffloadRestClient implements Runnable {
 			  rd.close();
 
 			  conn.disconnect();
+			  
+			  long endTime = System.nanoTime();
+			   logger.info("Time Taken for Check REST Operation: "+(((double)(endTime-startTime))/1000000000));
+
 			  return sb.toString();
 			}
 	@Override

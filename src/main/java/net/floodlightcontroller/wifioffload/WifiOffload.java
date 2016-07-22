@@ -146,9 +146,14 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		String ipStr= scn.next();
 		String peerIpStr = scn.next();
 		scn.close();
-		controller = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:33"), IPv4Address.of(ipStr), 8080, 0,1000, false);
-		WifiOffloadSDNController peerController = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:44"), IPv4Address.of(peerIpStr), 8080, 0,1000, false);
-		controllers.addController(peerController);
+	controller = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:33"), IPv4Address.of(ipStr), 8080, 0,1000, false,0);
+	  //logger.info("Create Local SDN Controller");
+	   //controller = controllers.createController();
+      //logger.info("Create Peer SDN Controller");
+
+	WifiOffloadSDNController peerController = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:44"), IPv4Address.of(peerIpStr), 8080, 0,1000, false,0);
+		//WifiOffloadSDNController peerController = controllers.createController();
+	   controllers.addController(peerController);
 		controllers.setLocalController(controller);
 		logger.info("WIFI-OFFLOAD_INIT");
 		
@@ -172,7 +177,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	public net.floodlightcontroller.core.IListener.Command receive(IOFSwitch sw, OFMessage msg,
 			FloodlightContext cntx) {
 	  
-		if (!this.enabled) {
+		if (!this.controller.isEnabled()) {
 			return Command.CONTINUE;
 		}
 
@@ -258,14 +263,16 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	@Override
 	public void enableWifiOffload(boolean enabled) {
 		logger.info("Setting wifi-offload to {}", enabled);
-		this.enabled = enabled;
+		this.controller.setEnabled(enabled);
+		//this.enabled = enabled;
 		
 	}
 
 	@Override
 	public boolean isEnabled() {
 		// TODO Auto-generated method stub
-		return enabled;
+		//return enabled;
+		return this.controller.isEnabled();
 	}
 
 	@Override
@@ -312,6 +319,8 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	@Override
 	public void addUserEntry(WifiOffloadUserEntry entry) {
          logger.info("ADD USER ENTRY");
+         //Increase Number Of Mobile Users
+         this.controller.numMobileUsers++;
 		// generate random userId for each newly created rule
 		// may want to return to caller if useful
 		// may want to check conflict
@@ -349,6 +358,9 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 			if (r.userId == userId) {
 				// found the rule, now remove it
 				iter.remove();
+				
+				//Decrease Number Of Mobile Users
+				this.controller.numMobileUsers--;
 				break;
 			}
 		}
@@ -396,7 +408,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         }else{
         	
         	logger.info("Searching User in Other SDN Controller");
-        	WifiOffloadUserEntry remoteEntry = WifiOffloadSDNControllers.searchUserInNetwork(controllers, entry);
+        	WifiOffloadUserEntry remoteEntry = controllers.searchUserInNetwork(controllers, entry);
         	
         	if(remoteEntry != null){
         		remoteEntry.sdnConId = this.controller.getId();
@@ -440,7 +452,32 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 
 		// no rule matched, so it doesn't exist in the rules
 		return false;
-	}	
+	}
+
+		@Override
+		public WifiOffloadSDNController getLocalController() {
+			// TODO Auto-generated method stub
+			return this.controller;
+		}
+
+		@Override
+		public void setLocalController(WifiOffloadSDNController controller) {
+			// TODO Auto-generated method stub
+			this.controller = controller;
+			
+		}
+
+		@Override
+		public void addController(WifiOffloadSDNController controller) {
+			// TODO Auto-generated method stub
+			this.controllers.addController(controller);
+		}
+
+		@Override
+		public List<WifiOffloadSDNController> getControllers() {
+			// TODO Auto-generated method stub
+			return this.controllers.getControllersList();
+		}	
 	
 
 }

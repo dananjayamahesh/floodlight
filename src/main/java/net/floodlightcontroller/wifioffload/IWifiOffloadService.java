@@ -57,6 +57,14 @@ public interface IWifiOffloadService extends IFloodlightService {
      * Deletes a wifi-offload user entry
      */
     public void deleteUserEntry(long userId);
+    
+    //Newly Add Offloading Features
+    public WifiOffloadSDNController getLocalController();
+    
+    public void setLocalController(WifiOffloadSDNController controller);
 	
+    public void addController(WifiOffloadSDNController controller);
+    
+    public List<WifiOffloadSDNController> getControllers();
 	
 }
