@@ -101,6 +101,9 @@ public class WifiOffloadJsonExtract {
 	
 	
 	public static WifiOffloadUserEntry jsonToUserEntry(String fmJson) {
+		
+		log.info("JssonToUseEntry Conversion Starts");
+		
 		WifiOffloadUserEntry entry = new WifiOffloadUserEntry();
 		MappingJsonFactory f = new MappingJsonFactory();
 		JsonParser jp;

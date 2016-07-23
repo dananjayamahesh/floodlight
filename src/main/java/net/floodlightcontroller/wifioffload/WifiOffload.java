@@ -152,7 +152,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		logger.info("Enter Controller Type ID: \n");
 		int conType = scn.nextInt();	
 		scn.close();
-	controller = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:33"), IPv4Address.of(ipStr), 8080, 0,1000, false,0);
+	controller = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:33"), IPv4Address.of(ipStr), 8080, 0,50, false,0);
 	controller.setArea(areaId);
 	controller.setConType(conType);
 	
@@ -160,7 +160,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	   //controller = controllers.createController();
       //logger.info("Create Peer SDN Controller");
 
-	WifiOffloadSDNController peerController = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:44"), IPv4Address.of(peerIpStr), 8080, 0,1000, false,0);
+	WifiOffloadSDNController peerController = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:44"), IPv4Address.of(peerIpStr), 8080, 0,50, false,0);
 		//WifiOffloadSDNController peerController = controllers.createController();
 	   controllers.addController(peerController);
 		controllers.setLocalController(controller);

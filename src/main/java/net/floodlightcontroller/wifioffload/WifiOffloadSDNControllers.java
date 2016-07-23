@@ -129,6 +129,7 @@ public class WifiOffloadSDNControllers {
 					}
 					else{
 						//checkForOffloadingScenario();
+						logger.info("Start Mobility Management - Mobile User");
 					 	remoteEntry=WifiOffloadSDNControllers.getUserFromRemoteController(controller,entry);
 					 	return remoteEntry;
 					}
@@ -153,6 +154,8 @@ public class WifiOffloadSDNControllers {
 	
 	public static WifiOffloadUserEntry getUserFromRemoteController(WifiOffloadSDNController controller,WifiOffloadUserEntry entry){
 		//Check Whether the user exist in that SDN Controller
+		
+		logger.info("Send Request For Getting User "+entry.userMacAddress.toString()+" From Controller "+controller.ipAddress.toString());
 		long startTime = System.nanoTime();
 				String urlStr = "http://"+controller.getIpAddress().toString()+":8080/oulu/wifioffload/user/json";
 				String [] paramName = {"userid"};
@@ -162,7 +165,9 @@ public class WifiOffloadSDNControllers {
 				try{
 					
 					String httpResponse=WifiOffloadRestClient.httpPost1(urlStr, paramName, paramVal);
+					logger.info("Rest Operation Completed");
 					userEntry = WifiOffloadJsonExtract.jsonToUserEntry(httpResponse);
+					logger.info("User Entry :"+userEntry.toString());
 					logger.info("REST HTTP POST RESPONSE: "+httpResponse+":UserId:"+userEntry.userMacAddress.toString());
 				}
 				catch(Exception e){

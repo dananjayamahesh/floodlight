@@ -135,7 +135,8 @@ public class WifiOffloadRestClient implements Runnable {
 	
 	public static String httpPost1(String urlStr, String[] paramName,
 			String[] paramVal) throws Exception {
-			  
+			 
+		logger.info("Start Post 1");
 		long startTime = System.nanoTime();
 		      URL url = new URL(urlStr);
 			  HttpURLConnection conn =
@@ -165,7 +166,7 @@ public class WifiOffloadRestClient implements Runnable {
 			  if (conn.getResponseCode() != 200) {
 			    throw new IOException(conn.getResponseMessage());
 			  }
-
+             logger.info("Start Reading Post 1");
 			  // Buffer the result into a string
 			  BufferedReader rd = new BufferedReader(
 			      new InputStreamReader(conn.getInputStream()));
@@ -175,12 +176,10 @@ public class WifiOffloadRestClient implements Runnable {
 			    sb.append(line);
 			  }
 			  rd.close();
-
 			  conn.disconnect();
 			  
 			  long endTime = System.nanoTime();
 			   logger.info("Time Taken for Check REST Operation: "+(((double)(endTime-startTime))/1000000000));
-
 			  return sb.toString();
 			}
 	@Override
