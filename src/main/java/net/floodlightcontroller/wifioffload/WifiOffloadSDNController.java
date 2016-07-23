@@ -20,6 +20,8 @@ public class WifiOffloadSDNController implements Comparable<WifiOffloadSDNContro
 	 public long maxNumMobileUsers;
 	 public boolean enabled;
 	 public int conType=0;
+	 
+	 public int scenario=0;
 	 	 
 	 public int tcpPort;	 
 	 public int costFactor;
@@ -99,6 +101,14 @@ public class WifiOffloadSDNController implements Comparable<WifiOffloadSDNContro
 	
 	public int getConType(){
 		return this.conType;
+	}
+	
+	public int getScenario(){
+		return this.scenario;
+	}
+	
+	public void setScenario(int scenario){
+		this.scenario  = scenario;
 	}
 	
 	public long genID(){

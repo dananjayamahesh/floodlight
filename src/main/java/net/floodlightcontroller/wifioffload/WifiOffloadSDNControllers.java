@@ -106,8 +106,9 @@ public class WifiOffloadSDNControllers {
 					logger.info("User "+entry.userMacAddress.toString()+" Found in Controller: "+controller.getIpAddress().toString());
 					
 					//c is the native one;
-					
+					WifiOffloadSDNController localController = controllers.localController;
 					//Offloading Scenario
+					
 					if(controller.areaId == localController.areaId ){
 						
 						//Typical Offloading with Subscriber Density

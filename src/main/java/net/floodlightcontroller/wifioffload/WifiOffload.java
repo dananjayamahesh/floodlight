@@ -143,11 +143,20 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		controllers= new WifiOffloadSDNControllers();
 		
 		Scanner scn = new Scanner(System.in);
+		logger.info("Enter Local Controller IP Address : \n");
 		String ipStr= scn.next();
+		logger.info("Enter Peer  Controller IP Address : \n");
 		String peerIpStr = scn.next();
+		logger.info("Enter Area ID: \n");
+		int areaId = scn.nextInt();	
+		logger.info("Enter Controller Type ID: \n");
+		int conType = scn.nextInt();	
 		scn.close();
 	controller = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:33"), IPv4Address.of(ipStr), 8080, 0,1000, false,0);
-	  //logger.info("Create Local SDN Controller");
+	controller.setArea(areaId);
+	controller.setConType(conType);
+	
+	   //logger.info("Create Local SDN Controller");
 	   //controller = controllers.createController();
       //logger.info("Create Peer SDN Controller");
 
