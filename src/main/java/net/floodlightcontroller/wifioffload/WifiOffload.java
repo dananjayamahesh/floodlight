@@ -150,11 +150,19 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		logger.info("Enter Area ID: \n");
 		int areaId = scn.nextInt();	
 		logger.info("Enter Controller Type ID: \n");
-		int conType = scn.nextInt();	
+		int conType = scn.nextInt();
+		logger.info("Enter Local Controller MAXIMUM Subscribers: \n");
+		int maxNumMobileUsers = scn.nextInt();
+		logger.info("Enter Enable for Cost Based Wifi-Offloading: \n");
+		boolean isCostBaseOffloadEn = scn.nextBoolean();
+		logger.info("Enter Enable for Density Based Wifi-Offloading: \n");
+		boolean isSubDenBaseOffloadEn = scn.nextBoolean();
+
 		scn.close();
 	controller = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:33"), IPv4Address.of(ipStr), 8080, 0,50, false,0);
 	controller.setArea(areaId);
 	controller.setConType(conType);
+	controller.setMaxNumMobileUsers(maxNumMobileUsers);
 	
 	   //logger.info("Create Local SDN Controller");
 	   //controller = controllers.createController();
@@ -164,14 +172,17 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		//WifiOffloadSDNController peerController = controllers.createController();
 	   controllers.addController(peerController);
 		controllers.setLocalController(controller);
-		logger.info("WIFI-OFFLOAD_INIT");
+		controllers.setCostBaseOffloadEnable(isCostBaseOffloadEn);
+		controllers.setSubDenBaseOffloadEnable(isSubDenBaseOffloadEn);
+		
+		logger.info("Initializing Wifi-Offload Core Module...");
 		
 	}
 
 	@Override
 	public void startUp(FloodlightModuleContext context) throws FloodlightModuleException {
 		// TODO Auto-generated method stub
-		logger.info("WIFI-OFFLOAD_STARTUP");
+		logger.info("Starting-Up Wifi-Offload Core Module...");
 		logger.info("Starting SDN Controller "+controller.getIpAddress().toString());
 		floodlightProvider.addOFMessageListener(OFType.PACKET_IN, this);
 		restApiService.addRestletRoutable(new WifiOffloadWebRoutable());
@@ -411,9 +422,14 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         
         entry.userId = entry.genID();
         
-        if(checkUserEntryExists(entry, entries)){
+        long startTime = System.nanoTime();
+        boolean isUserExist= checkUserEntryExists(entry, entries);
+        long endTime = System.nanoTime();
+        logger.info("Time Taken For Search User "+entry.userMacAddress.toString()+" is "+((double)(endTime-startTime))/1000000000);
+        
+        if(isUserExist){
         	//Check User within this SDN Controller
-        	logger.info("User entry is already exist in this controller: "+entry.userMacAddress.toString());
+        	logger.info("User "+entry.userMacAddress.toString()+" is already exist in this controller");
         }else{
         	
         	logger.info("Searching User in Other SDN Controller");
@@ -452,7 +468,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		while (iter.hasNext()) {
 		
 			WifiOffloadUserEntry r = iter.next();
-			logger.info("MAC-ADDRESS: "+ r.userMacAddress.toString());
+			//logger.info("MAC-ADDRESS: "+ r.userMacAddress.toString());
 			// check if we find a similar rule
 			if (entry.isSameAs(r)) {
 				return true;

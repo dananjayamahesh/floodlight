@@ -16,12 +16,16 @@ public class WifiOffloadSDNControllers {
 	public TreeSet<WifiOffloadSDNController> controllers = new TreeSet<WifiOffloadSDNController>();
     public WifiOffloadSDNController localController=null;;
 	public int numControllers =0;
-	protected static Logger logger = LoggerFactory.getLogger(WifiOffloadSDNControllers.class); ;
+	protected static Logger logger = LoggerFactory.getLogger(WifiOffloadSDNControllers.class);
+	public boolean isSubDenBaseOffloadEn;
+	public boolean isCostBaseOffloadEn;
 	
 	public WifiOffloadSDNControllers(){
 		this.numControllers =0;
 		logger = LoggerFactory.getLogger(WifiOffloadSDNControllers.class);
 		localController = null;
+		this.isSubDenBaseOffloadEn = false;
+		this.isCostBaseOffloadEn  = false;
 	}
 	
 	public long genId(WifiOffloadSDNController controller){
@@ -53,6 +57,18 @@ public class WifiOffloadSDNControllers {
 		return new ArrayList<WifiOffloadSDNController>(this.controllers);
 	}
 	
+	public boolean isSubDenBaseOffloadEnable(){
+		return this.isSubDenBaseOffloadEn;
+	}
+	public void setSubDenBaseOffloadEnable(boolean isSubDenBaseOffloadEn){
+		this.isSubDenBaseOffloadEn = isSubDenBaseOffloadEn;
+	}
+	public boolean isCostBaseOffloadEnable(){
+		return this.isCostBaseOffloadEn;
+	}
+	public void setCostBaseOffloadEnable(boolean isCostBaseOffloadEn){
+		this.isCostBaseOffloadEn = isCostBaseOffloadEn;
+	}	
 	
 	public WifiOffloadSDNController createController(){
 		Scanner scn = new Scanner (System.in);
@@ -113,17 +129,43 @@ public class WifiOffloadSDNControllers {
 						
 						//Typical Offloading with Subscriber Density
 						  //Possible chances for offloading
-						logger.info("Start Wifi Offloading In The Area : "+controller.areaId +" Based on Controller Cost");
-						// Based Offloading
-						//Controller Ty
-						  if(controller.conType > localController.conType){
+						
+						if(controllers.isCostBaseOffloadEn){
+							logger.info("Start Wifi Offloading In The Area : "+controller.areaId +" Based on Controller Cost");
+								// Based Offloading
+								//Controller Ty
+							if(controller.conType > localController.conType){
+								//Should Check For Local Subscriber Density/Capacity Based Offloding
 							  logger.info("Processing Controller Type , This Controller "+localController.conType + "And Remote Controller "+controller.conType);
 							  remoteEntry=WifiOffloadSDNControllers.getUserFromRemoteController(controller,entry);
 							  return remoteEntry;
-						  }else{
-							  remoteEntry = null;
+							}else{
+								
+								//Subscriber Density Based Offloading
+								if(controllers.isCostBaseOffloadEn){
+									logger.info("Start Wifi Offloading In The Area : "+controller.areaId +" Based on Controller Subscriber Density");
+									
+									 if(controller.numMobileUsers > controller.maxNumMobileUsers){
+										  logger.info("Checking For Remote Controller Subscriber Density : "+controller.numMobileUsers +" With Maximum Density of "+controller.maxNumMobileUsers);
+										  remoteEntry=WifiOffloadSDNControllers.getUserFromRemoteController(controller,entry);
+										  return remoteEntry;
+									 }
+									 else{
+										 remoteEntry = null;
+									     continue;
+									 }
+								}
+								else{
+									remoteEntry = null;
+									continue;
+								}
+							  
+							}
+						}
+						else{
+							remoteEntry = null;
 							  continue;
-						  }
+						}
 						  
 						  //SUbscriber Density Based Offloading
 					}
