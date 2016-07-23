@@ -88,7 +88,8 @@ public class WifiOffloadSDNControllers {
 			//	isEnabled = true;
 				con=WifiOffloadSDNControllers.sendControllerRequest(controller);
 				 isEnabled = con.isEnabled();
-				 controller.setEnabled(isEnabled);				
+				 controller.setEnabled(isEnabled);	
+				 controller = con;
 			}
 			else{
 				logger.info("Send A Enable Request To Controller: "+controller.getIpAddress().toString());
@@ -111,13 +112,19 @@ public class WifiOffloadSDNControllers {
 						
 						//Typical Offloading with Subscriber Density
 						  //Possible chances for offloading
+						logger.info("Start Wifi Offloading In The Area : "+controller.areaId +" Based on Controller Cost");
+						// Based Offloading
+						//Controller Ty
 						  if(controller.conType > localController.conType){
+							  logger.info("Processing Controller Type , This Controller "+localController.conType + "And Remote Controller "+controller.conType);
 							  remoteEntry=WifiOffloadSDNControllers.getUserFromRemoteController(controller,entry);
 							  return remoteEntry;
 						  }else{
 							  remoteEntry = null;
 							  continue;
 						  }
+						  
+						  //SUbscriber Density Based Offloading
 					}
 					else{
 						//checkForOffloadingScenario();
@@ -246,11 +253,13 @@ public class WifiOffloadSDNControllers {
 		String [] paramName = {"userid"};
 		String userId = entry.userMacAddress.toString();
 		String [] paramVal = {userId};
+		boolean isExist=false;
 		try{
 			
 			String httpResponse=WifiOffloadRestClient.httpPost1(urlStr, paramName, paramVal);
 			String status = WifiOffloadJsonExtract.jsonExtractStatus(httpResponse);
 			logger.info("REST HTTP POST RESPONSE: "+httpResponse+":UserId:"+status);
+			isExist = (status.equals("exist"))?true:false;
 		}
 		catch(Exception e){
 			logger.info(e.getMessage());
@@ -260,7 +269,7 @@ public class WifiOffloadSDNControllers {
 		logger.info("Time Taken for Check Conroller Enable: "+(((double)(endTime-startTime))/1000000000));
 
 		
-		return false;
+		return isExist;
 	}
 	
 
