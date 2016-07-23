@@ -99,17 +99,28 @@ public class WifiOffloadSDNControllers {
 			boolean isEnabled = false;
 			
 			WifiOffloadSDNController con=null;
+			long startTime=0;
+			long endTime=0;
+			double timeDiff=0;
+			
 			if(controller.isEnabled()){
+				
+				
 				logger.info("Controller "+controller.getIpAddress().toString()+" is already Enabled");
 			//	isEnabled = true;
+				
 				con=WifiOffloadSDNControllers.sendControllerRequest(controller);
+				
+				
 				 isEnabled = con.isEnabled();
 				 controller.setEnabled(isEnabled);	
 				 controller = con;
 			}
 			else{
-				logger.info("Send A Enable Request To Controller: "+controller.getIpAddress().toString());
-				 con=WifiOffloadSDNControllers.sendControllerRequest(controller);
+				logger.info("Send A Enable Request To Controller: "+controller.getIpAddress().toString());				
+				   
+				   con=WifiOffloadSDNControllers.sendControllerRequest(controller);			    				 
+				 
 				 isEnabled = con.isEnabled();
 				 controller.setEnabled(isEnabled);
 				 controller = con;
@@ -216,10 +227,13 @@ public class WifiOffloadSDNControllers {
 					logger.info(e.getMessage());
 				}		
 				
-		long endTime = System.nanoTime();
+				long endTime = System.nanoTime();
+		        double timeDiff= ((double)(endTime-startTime))/1000000000;
+		        WiFiOffloadPerformanceMonitor.userGetRemoteUserTimeEn = true;
+		        WiFiOffloadPerformanceMonitor.userGetRemoteUserTime = timeDiff;
+			   logger.info("Time Taken for Check Conroller Enable: "+(((double)(endTime-startTime))/1000000000));
 		
-		logger.info("Time Taken for Get Remote User: "+(((double)(endTime-startTime))/1000000000));
-			
+				
 		return userEntry;
 	}
 	
@@ -282,7 +296,11 @@ public class WifiOffloadSDNControllers {
 		}catch(Exception e){
 			logger.info(e.toString());
 		}
-	   long endTime = System.nanoTime();
+		
+		long endTime = System.nanoTime();
+        double timeDiff= ((double)(endTime-startTime))/1000000000;
+        WiFiOffloadPerformanceMonitor.userControllerSyncTimeEn = true;
+        WiFiOffloadPerformanceMonitor.userControllerSyncTime = timeDiff;
 	   logger.info("Time Taken for Check Conroller Enable: "+(((double)(endTime-startTime))/1000000000));
      
 	    return c;
@@ -314,8 +332,11 @@ public class WifiOffloadSDNControllers {
 		}
 		
 		long endTime = System.nanoTime();
-		logger.info("Time Taken for Check Conroller Enable: "+(((double)(endTime-startTime))/1000000000));
-
+        double timeDiff= ((double)(endTime-startTime))/1000000000;
+        WiFiOffloadPerformanceMonitor.userCheckRemoteUserTimeEn = true;
+        WiFiOffloadPerformanceMonitor.userCheckRemoteUserTime = timeDiff;
+	   logger.info("Time Taken for Check Conroller Enable: "+(((double)(endTime-startTime))/1000000000));
+ 
 		
 		return isExist;
 	}

@@ -177,6 +177,8 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		
 		logger.info("Initializing Wifi-Offload Core Module...");
 		
+		logger.info("OpenFile: "+WiFiOffloadPerformanceMonitor.initPrinter("/home/mahesh/FLOODLIGHT/wifioffload-output/mobility.txt")+"");
+		
 	}
 
 	@Override
@@ -392,6 +394,11 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	
 	public Command processPacketInMessage(IOFSwitch sw, OFPacketIn pi, IRoutingDecision decision, FloodlightContext cntx) {
 		logger.info("PROCESS-PACKET-IN");
+		
+		WiFiOffloadPerformanceMonitor.flushRecord();
+		WiFiOffloadPerformanceMonitor.timeStamp = System.currentTimeMillis();
+		
+		
 		Ethernet eth = IFloodlightProviderService.bcStore.get(cntx, IFloodlightProviderService.CONTEXT_PI_PAYLOAD);
 		OFPort portIn = (pi.getVersion().compareTo(OFVersion.OF_12) < 0 ? pi.getInPort() : pi.getMatch().get(MatchField.IN_PORT));
 		
@@ -422,10 +429,16 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         
         entry.userId = entry.genID();
         
+        WiFiOffloadPerformanceMonitor.ipAddress = controllers.getLocalController().ipAddress;
+        WiFiOffloadPerformanceMonitor.userMacAddress = entry.userMacAddress;
+        
         long startTime = System.nanoTime();
         boolean isUserExist= checkUserEntryExists(entry, entries);
         long endTime = System.nanoTime();
-        logger.info("Time Taken For Search User "+entry.userMacAddress.toString()+" is "+((double)(endTime-startTime))/1000000000);
+        double timeDiff= ((double)(endTime-startTime))/1000000000;
+        logger.info("Time Taken For Search User "+entry.userMacAddress.toString()+" is "+timeDiff);
+        WiFiOffloadPerformanceMonitor.userLocalSearchTimeEn = true;
+        WiFiOffloadPerformanceMonitor.userLocalSearchTime = timeDiff;
         
         if(isUserExist){
         	//Check User within this SDN Controller
@@ -433,12 +446,26 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         }else{
         	
         	logger.info("Searching User in Other SDN Controller");
-        	WifiOffloadUserEntry remoteEntry = controllers.searchUserInNetwork(controllers, entry);
+        	
+        	 startTime = System.nanoTime();
+        	 WifiOffloadUserEntry remoteEntry = controllers.searchUserInNetwork(controllers, entry);        	
+        	//Timing
+        	 endTime = System.nanoTime();
+             timeDiff= ((double)(endTime-startTime))/1000000000;
+             WiFiOffloadPerformanceMonitor.userNetworkSearchTimeEn = true;
+             WiFiOffloadPerformanceMonitor.userNetworkSearchTime = timeDiff;
         	
         	if(remoteEntry != null){
         		remoteEntry.sdnConId = this.controller.getId();
         		remoteEntry.areaId   = this.controller.getAreadId();
+        		
+        		startTime = System.nanoTime();
         		addUserEntry(remoteEntry);
+        		endTime = System.nanoTime();
+                timeDiff= ((double)(endTime-startTime))/1000000000;
+                WiFiOffloadPerformanceMonitor.userAddingTimeEn = true;
+                WiFiOffloadPerformanceMonitor.userAddingTime = timeDiff;
+        		
         	}
         	/*if(WifiOffloadSDNControllers.checkForControllerEnable()){
         		
@@ -455,11 +482,13 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         	}*/
         	else{
     			addUserEntry(entry);
-    			logger.info("Remote Controller is not enabled  : Adding User Entry: "+entry.userMacAddress.toString());
-        	}       	
-        	
+        		//Future Update with / may be want to store for better mobility
+    			logger.info("User Entry is neither exist nor added to data base : reason may be user exist in a controller in the same area with high priority");
+        	}
         }
-            
+        
+        WiFiOffloadPerformanceMonitor.numMobileUsers = controller.numMobileUsers;
+        WiFiOffloadPerformanceMonitor.printRecord();
 		return Command.CONTINUE;
 	}
 	

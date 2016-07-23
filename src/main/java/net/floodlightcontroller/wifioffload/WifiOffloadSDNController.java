@@ -19,9 +19,9 @@ public class WifiOffloadSDNController implements Comparable<WifiOffloadSDNContro
 	 public long numMobileUsers;
 	 public long maxNumMobileUsers;
 	 public boolean enabled;
-	 public int conType=0;
+	 public int conType;
 	 
-	 public int scenario=0;
+	 public int scenario;
 	 	 
 	 public int tcpPort;	 
 	 public int costFactor;
