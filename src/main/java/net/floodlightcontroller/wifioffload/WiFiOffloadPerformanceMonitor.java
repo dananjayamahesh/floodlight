@@ -30,6 +30,7 @@ public class WiFiOffloadPerformanceMonitor {
 	public static double userCheckRemoteUserTime;
 	public static double userGetRemoteUserTime;
 	public static double userAddingTime;
+	public static double userRemovingTime;
 	
 	public static boolean userLocalSearchTimeEn;
 	public static boolean userNetworkSearchTimeEn;
@@ -37,6 +38,11 @@ public class WiFiOffloadPerformanceMonitor {
 	public static boolean userCheckRemoteUserTimeEn;
 	public static boolean userGetRemoteUserTimeEn;
 	public static boolean userAddingTimeEn;
+	
+	public static boolean userRemovingTimeEn;
+	
+	public static boolean isRestOperation;
+	public static boolean isCoreOperation;
     
 
 	public WiFiOffloadPerformanceMonitor(String filePath){
@@ -52,7 +58,7 @@ public class WiFiOffloadPerformanceMonitor {
 			PrintWriter pw = new PrintWriter(bw);
 			printer = pw;
 			
-			printer.println("TIMESTAMP\tIP\tMAC_ADDRESS\tUSERS\tLOCAL_SEARCH\tNET_SEARCH\tSYNC_EN\tSYNC_TIME\tCHECK_EN\tCHECK_TIME\tGET_EN\tGET_TIME\tADD_EN\tADD_TIME");
+			printer.println("TIMESTAMP,TYPE,IP,MAC_ADDRESS,USERS,LOCAL_SEARCH,NET_SEARCH,SYNC_EN,SYNC_TIME,CHECK_EN,CHECK_TIME,GET_EN,GET_TIME,ADD_EN,ADD_TIME,REMOVE_EN,REMOVE_TIME");
 			printer.flush();
 			return true;
 		}
@@ -81,6 +87,7 @@ public class WiFiOffloadPerformanceMonitor {
 		 userCheckRemoteUserTime =0;
 		 userGetRemoteUserTime =0;
 		 userAddingTime =0;
+		 userRemovingTime =0;
 		
 		 userLocalSearchTimeEn = false;
 		 userNetworkSearchTimeEn = false;
@@ -88,6 +95,10 @@ public class WiFiOffloadPerformanceMonitor {
 		 userCheckRemoteUserTimeEn =false;
 		 userGetRemoteUserTimeEn = false;
 		 userAddingTimeEn = false;
+		 userRemovingTimeEn = false;
+		 
+		 isCoreOperation = false;
+		 isRestOperation = false;
 		
 		return true;
 	}
@@ -97,48 +108,73 @@ public class WiFiOffloadPerformanceMonitor {
 		String record = "";
 		
 		Date data = new Date(timeStamp);
-		record = record+timeStamp;		
-		record += "\t"+ ipAddress.toString();
-		record += "\t"+ userMacAddress.toString();
-		record += "\t"+ numMobileUsers;
-		record += "\t"+ userLocalSearchTime;
-		record += "\t"+ userNetworkSearchTime;	
+		record = record+timeStamp;	
+		
+		if(isCoreOperation){
+			record += ","+"CORE";
+		}else if(isRestOperation){
+			record += ","+"REST";
+		}else{
+			record += ","+"UNDF";
+		}
+		
+		record += ","+ ipAddress.toString();
+		record += ","+ userMacAddress.toString();
+		record += ","+ numMobileUsers;
+		record += ","+ userLocalSearchTime;
+		
+		if(userNetworkSearchTimeEn){
+			record += ","+"true";
+		    record += ","+ userNetworkSearchTime;
+		}else{
+			record += ","+"false";
+			record += ","+ userNetworkSearchTime;
+		}
 		
 		
 		if(userControllerSyncTimeEn){
-			record += "\t"+"true";
-			record += "\t"+ userControllerSyncTime;
+			record += ","+"true";
+			record += ","+ userControllerSyncTime;
 		}else{
-			record += "\t"+"false";
-			record += "\t"+ userControllerSyncTime;
+			record += ","+"false";
+			record += ","+ userControllerSyncTime;
 		}
 		
 		if(userCheckRemoteUserTimeEn){
-			record += "\t"+"true";
-			record += "\t"+ userCheckRemoteUserTime;
+			record += ","+"true";
+			record += ","+ userCheckRemoteUserTime;
 		}
 		else{
-			record += "\t"+"false";
-			record += "\t"+ userCheckRemoteUserTime;
+			record += ","+"false";
+			record += ","+ userCheckRemoteUserTime;
 		}
 		
 		if(userGetRemoteUserTimeEn){
-			record += "\t"+"true";
-			record += "\t"+ userGetRemoteUserTime;
+			record += ","+"true";
+			record += ","+ userGetRemoteUserTime;
 		}
 		else{
-			record += "\t"+"false";
-			record += "\t"+ userGetRemoteUserTime;
+			record += ","+"false";
+			record += ","+ userGetRemoteUserTime;
 		}
 		
 		
 		if(userAddingTimeEn){
-			record += "\t"+"true";
-			record += "\t"+ userAddingTime;
+			record += ","+"true";
+			record += ","+ userAddingTime;
 		}
 		else{
-			record += "\t"+"false";
-			record += "\t"+ userAddingTime;
+			record += ","+"false";
+			record += ","+ userAddingTime;
+		}
+		
+		if(userRemovingTimeEn){
+			record += ","+"true";
+			record += ","+ userRemovingTime;
+		}
+		else{
+			record += ","+"false";
+			record += ","+ userRemovingTime;
 		}
 		
 		printer.println(record);

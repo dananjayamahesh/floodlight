@@ -88,6 +88,19 @@ public class WifiOffloadSDNControllers {
 		
 	}
 	
+	public boolean overrideControllerParameters(WifiOffloadSDNController con1, WifiOffloadSDNController con2){
+		con1.id = con2.id;
+		con1.name = con2.name;
+		con1.description = con2.description;
+		con1.areaId = con2.areaId;
+		con1.macAddress = con2.macAddress;
+		con1.numMobileUsers = con2.numMobileUsers;
+		con1.maxNumMobileUsers = con2.maxNumMobileUsers;
+		con1.enabled = con2.enabled;
+		con1.conType = con2.conType;
+		return true;
+	}
+	
 	public WifiOffloadUserEntry searchUserInNetwork(WifiOffloadSDNControllers controllers , WifiOffloadUserEntry entry){
 	  
 		logger.info("Starting Searching The Network for user: "+entry.userMacAddress.toString());
@@ -114,7 +127,7 @@ public class WifiOffloadSDNControllers {
 				
 				 isEnabled = con.isEnabled();
 				 controller.setEnabled(isEnabled);	
-				 controller = con;
+				 //controller = con;
 			}
 			else{
 				logger.info("Send A Enable Request To Controller: "+controller.getIpAddress().toString());				
@@ -123,9 +136,13 @@ public class WifiOffloadSDNControllers {
 				 
 				 isEnabled = con.isEnabled();
 				 controller.setEnabled(isEnabled);
-				 controller = con;
+				 //controller = con;
 				 
 			}
+			
+			//controller = con is not good
+			overrideControllerParameters(controller, con);
+			
 			
 			if(isEnabled){
 				if(WifiOffloadSDNControllers.checkForUserInOtherControllers(controller,entry)){

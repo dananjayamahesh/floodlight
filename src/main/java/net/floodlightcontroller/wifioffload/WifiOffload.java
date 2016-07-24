@@ -177,7 +177,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		
 		logger.info("Initializing Wifi-Offload Core Module...");
 		
-		logger.info("OpenFile: "+WiFiOffloadPerformanceMonitor.initPrinter("/home/mahesh/FLOODLIGHT/wifioffload-output/mobility.txt")+"");
+		logger.info("OpenFile: "+WiFiOffloadPerformanceMonitor.initPrinter("/home/mahesh/FLOODLIGHT/wifioffload-output/mobility.csv")+"");
 		
 	}
 
@@ -374,6 +374,13 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 
 	@Override
 	public void deleteUserEntry(long userId) {
+		
+		WiFiOffloadPerformanceMonitor.flushRecord();
+		WiFiOffloadPerformanceMonitor.timeStamp = System.currentTimeMillis();
+		WiFiOffloadPerformanceMonitor.isRestOperation = true;
+		
+		
+		long startTime= System.nanoTime();
 		Iterator<WifiOffloadUserEntry> iter = this.entries.iterator();
 		while (iter.hasNext()) {
 			WifiOffloadUserEntry r = iter.next();
@@ -389,6 +396,14 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		// delete from database
 		storageSource.deleteRow(TABLE_NAME, Long.toString(userId));
 		
+		long endTime = System.nanoTime();
+        double timeDiff= ((double)(endTime-startTime))/1000000000;
+        WiFiOffloadPerformanceMonitor.userRemovingTimeEn = true;
+        WiFiOffloadPerformanceMonitor.userRemovingTime = timeDiff;
+        WiFiOffloadPerformanceMonitor.numMobileUsers = controller.numMobileUsers;
+        WiFiOffloadPerformanceMonitor.userMacAddress = MacAddress.of(userId);
+        WiFiOffloadPerformanceMonitor.printRecord();
+		
 	}
 	
 	
@@ -397,7 +412,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		
 		WiFiOffloadPerformanceMonitor.flushRecord();
 		WiFiOffloadPerformanceMonitor.timeStamp = System.currentTimeMillis();
-		
+		WiFiOffloadPerformanceMonitor.isCoreOperation = true;
 		
 		Ethernet eth = IFloodlightProviderService.bcStore.get(cntx, IFloodlightProviderService.CONTEXT_PI_PAYLOAD);
 		OFPort portIn = (pi.getVersion().compareTo(OFVersion.OF_12) < 0 ? pi.getInPort() : pi.getMatch().get(MatchField.IN_PORT));
