@@ -170,7 +170,7 @@ public class WifiOffloadSDNControllers {
 							}else{
 								
 								//Subscriber Density Based Offloading
-								if(controllers.isCostBaseOffloadEn){
+								if(controllers.isSubDenBaseOffloadEn){
 									logger.info("Start Wifi Offloading In The Area : "+controller.areaId +" Based on Controller Subscriber Density");
 									
 									 if(controller.numMobileUsers > controller.maxNumMobileUsers){
@@ -180,6 +180,7 @@ public class WifiOffloadSDNControllers {
 									 }
 									 else{
 										 remoteEntry = null;
+										 WifiOffloadUserEntry.userBlocked = true;
 									     continue;
 									 }
 								}

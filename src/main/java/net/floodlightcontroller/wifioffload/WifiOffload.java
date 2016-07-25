@@ -463,6 +463,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         	logger.info("Searching User in Other SDN Controller");
         	
         	 startTime = System.nanoTime();
+        	 WifiOffloadUserEntry.userBlocked = false;
         	 WifiOffloadUserEntry remoteEntry = controllers.searchUserInNetwork(controllers, entry);        	
         	//Timing
         	 endTime = System.nanoTime();
@@ -496,7 +497,10 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         		}
         	}*/
         	else{
-    			addUserEntry(entry);
+        		
+        		if(!WifiOffloadUserEntry.userBlocked){
+    		     	addUserEntry(entry);
+        		}
         		//Future Update with / may be want to store for better mobility
     			logger.info("User Entry is neither exist nor added to data base : reason may be user exist in a controller in the same area with high priority");
         	}

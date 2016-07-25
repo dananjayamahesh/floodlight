@@ -30,9 +30,11 @@ public class WifiOffloadUserEntry implements Comparable<WifiOffloadUserEntry> {
 	public boolean anySdnConId;
 	
 	public int priority = 0;
+	
+	public static boolean userBlocked;
 	  
 	public WifiOffloadUserEntry(){
-		
+	    
 	}
 	
 	@Override
