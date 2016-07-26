@@ -143,6 +143,8 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		controllers= new WifiOffloadSDNControllers();
 		
 		Scanner scn = new Scanner(System.in);
+		logger.info("Enter Local Controller ID : \n");
+		long id= scn.nextLong();
 		logger.info("Enter Local Controller IP Address : \n");
 		String ipStr= scn.next();
 		logger.info("Enter Peer  Controller IP Address : \n");
@@ -159,7 +161,8 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		boolean isSubDenBaseOffloadEn = scn.nextBoolean();
 
 		scn.close();
-	controller = new WifiOffloadSDNController(0, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:33"), IPv4Address.of(ipStr), 8080, 0,50, false,0);
+	controller = new WifiOffloadSDNController(id, "Master-Controller", "Main SDN Controller in The Network", 0, MacAddress.of("00:00:00:00:00:33"), IPv4Address.of(ipStr), 8080, 0,50, false,0);
+	controller.id = id;
 	controller.setArea(areaId);
 	controller.setConType(conType);
 	controller.setMaxNumMobileUsers(maxNumMobileUsers);
