@@ -63,7 +63,7 @@ public class WifiOffloadUserResource extends ServerResource {
         n.conType = wifioffload.getLocalController().conType;
         WiFiOffloadPerformanceMonitor.printUserEntry(n);
 		wifioffload.deleteUserEntry(n.userId);
-		log.info("User Removed From The DataBase");
+		log.info("User Removed From The DataBase : " + n.userId);
 		return n;
 	}
 
