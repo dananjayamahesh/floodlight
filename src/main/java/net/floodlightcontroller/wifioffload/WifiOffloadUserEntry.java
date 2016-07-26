@@ -22,6 +22,10 @@ public class WifiOffloadUserEntry implements Comparable<WifiOffloadUserEntry> {
 	public long areaId;
 	public long sdnConId;
 	
+	public int conType;
+	public long timestamp;
+	public int opeartion;
+	
 	public boolean anyDpId;
 	public boolean anyPortIn;
 	public boolean anyUserMacAddress;
@@ -32,7 +36,7 @@ public class WifiOffloadUserEntry implements Comparable<WifiOffloadUserEntry> {
 	public int priority = 0;
 	
 	public static boolean userBlocked;
-	  
+	
 	public WifiOffloadUserEntry(){
 	    
 	}
@@ -45,6 +49,23 @@ public class WifiOffloadUserEntry implements Comparable<WifiOffloadUserEntry> {
 	
 	public int hashCode(){
 		return (int)userMacAddress.getLong();
+	}
+	
+	public String toString(){
+		String entryStr = "";
+		
+		entryStr  += this.timestamp+",";
+		entryStr  += ((this.opeartion==0)?"ADD":((this.opeartion==1)?"REMOVE":"OTHER"));	
+		entryStr  += this.userId+",";
+		entryStr  += this.dpId.getLong()+",";
+		entryStr  += this.portIn.getPortNumber()+",";
+		entryStr  += this.userMacAddress.toString()+",";
+		entryStr  += this.userIpAddress.toString()+",";
+		entryStr  += this.sdnConId+",";
+		entryStr  += this.areaId+",";
+		entryStr  += (this.conType==0)?"WIFI":((this.conType==1)?"LTE":"OTHER");
+
+		return entryStr;
 	}
 	
 	@Override

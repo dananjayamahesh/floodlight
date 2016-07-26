@@ -96,6 +96,11 @@ public class WifiOffloadUserResource extends ServerResource {
 			log.error(status);
 		} else {
 			// delete rule from firewall
+			entry.timestamp = System.currentTimeMillis();
+	         entry.opeartion = 1;
+	         entry.conType = wifioffload.getLocalController().conType;
+	         WiFiOffloadPerformanceMonitor.printUserEntry(entry);
+			
 			wifioffload.deleteUserEntry(entry.userId);
 			status = "Rule deleted";
 		}

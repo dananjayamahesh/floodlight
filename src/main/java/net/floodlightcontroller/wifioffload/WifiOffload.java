@@ -177,8 +177,9 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		
 		logger.info("Initializing Wifi-Offload Core Module...");
 		
-		logger.info("OpenFile: "+WiFiOffloadPerformanceMonitor.initPrinter("/home/mahesh/FLOODLIGHT/wifioffload-output/mobility.csv")+"");
-		
+		logger.info("OpenLogFile: "+WiFiOffloadPerformanceMonitor.initPrinter("/home/mahesh/FLOODLIGHT/wifioffload-output/mobility.csv")+"");
+		logger.info("OpenUserEntryFile: "+WiFiOffloadPerformanceMonitor.initPrinterUserEntry("/home/mahesh/FLOODLIGHT/wifioffload-output/user_log.csv")+"");
+
 	}
 
 	@Override
@@ -343,6 +344,11 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
          logger.info("ADD USER ENTRY");
          //Increase Number Of Mobile Users
          this.controller.numMobileUsers++;
+         
+         entry.timestamp = System.currentTimeMillis();
+         entry.opeartion = 0;
+         entry.conType = this.controller.conType;
+         WiFiOffloadPerformanceMonitor.printUserEntry(entry);
 		// generate random userId for each newly created rule
 		// may want to return to caller if useful
 		// may want to check conflict
@@ -379,7 +385,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		WiFiOffloadPerformanceMonitor.timeStamp = System.currentTimeMillis();
 		WiFiOffloadPerformanceMonitor.isRestOperation = true;
 		
-		
+				
 		long startTime= System.nanoTime();
 		Iterator<WifiOffloadUserEntry> iter = this.entries.iterator();
 		while (iter.hasNext()) {

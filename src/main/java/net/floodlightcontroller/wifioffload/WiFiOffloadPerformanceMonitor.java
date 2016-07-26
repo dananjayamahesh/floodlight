@@ -44,9 +44,39 @@ public class WiFiOffloadPerformanceMonitor {
 	public static boolean isRestOperation;
 	public static boolean isCoreOperation;
     
-
+//UserEntry Printer
+	public static PrintWriter printerUserEntry;
+	
 	public WiFiOffloadPerformanceMonitor(String filePath){
 		
+	}
+	
+	public static boolean initPrinterUserEntry(String filePath){
+		try{
+			File file=new File(filePath);
+			FileWriter fw = new FileWriter(file);
+			BufferedWriter bw = new BufferedWriter(fw);
+			PrintWriter pw = new PrintWriter(bw);
+			printerUserEntry = pw;
+			
+			printerUserEntry.println("TIMESTAMP, OPERATION, ID, DPID, PORT, MAC_ADDRESS, IP_ADDRESS, CONTROLLER_ID, AREA_ID, CNTROLLER_TYPE");
+			printerUserEntry.flush();
+			return true;
+		}
+		catch(Exception e){
+			return false;
+		}
+	}
+	
+	public static boolean closePrinterUserEntry(){
+		WiFiOffloadPerformanceMonitor.printerUserEntry.close();
+		return true;
+	}
+	
+	public static boolean printUserEntry(WifiOffloadUserEntry entry){
+		printerUserEntry.println(entry.toString());
+		printerUserEntry.flush();
+		return true;
 	}
 	
 	public static boolean initPrinter(String filePath){
@@ -75,6 +105,7 @@ public class WiFiOffloadPerformanceMonitor {
 		return true;
 	}
 	
+		
 	public static boolean flushRecord(){
 		 timeStamp =0;;
 		 ipAddress= IPv4Address.of("0.0.0.0");
@@ -182,5 +213,8 @@ public class WiFiOffloadPerformanceMonitor {
 		
 		return true;
 	}
+	
+	
+	
 	
 }
