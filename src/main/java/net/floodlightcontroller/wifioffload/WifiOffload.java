@@ -343,8 +343,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 	public void addUserEntry(WifiOffloadUserEntry entry) {
          logger.info("ADD USER ENTRY");
          //Increase Number Of Mobile Users
-         this.controller.numMobileUsers++;
-         
+         this.controller.numMobileUsers++;         
          entry.timestamp = System.currentTimeMillis();
          entry.opeartion = 0;
          entry.conType = this.controller.conType;
@@ -435,6 +434,10 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
 		entry.areaId = 0;
 		entry.sdnConId = 0;
 		
+		entry.sdnConId = this.controller.id;
+		entry.areaId   = this.controller.areaId;
+		entry.conType  = this.controller.conType;
+		
 		logger.info("PACKET-In REASON: "+pi.getReason().toString());
 		
        if(eth.getEtherType() == EthType.IPv4){
@@ -480,6 +483,7 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         	if(remoteEntry != null){
         		remoteEntry.sdnConId = this.controller.getId();
         		remoteEntry.areaId   = this.controller.getAreadId();
+        		remoteEntry.conType  = this.controller.conType;
         		
         		startTime = System.nanoTime();
         		addUserEntry(remoteEntry);
@@ -505,7 +509,11 @@ public class WifiOffload implements IWifiOffloadService,IOFMessageListener, IFlo
         	else{
         		
         		if(!WifiOffloadUserEntry.userBlocked){
-    		     	addUserEntry(entry);
+            		startTime = System.nanoTime();
+        			addUserEntry(entry);        			
+        			timeDiff= ((double)(endTime-startTime))/1000000000;
+                    WiFiOffloadPerformanceMonitor.userAddingTimeEn = true;
+                    WiFiOffloadPerformanceMonitor.userAddingTime = timeDiff;
         		}
         		//Future Update with / may be want to store for better mobility
     			logger.info("User Entry is neither exist nor added to data base : reason may be user exist in a controller in the same area with high priority");

@@ -55,7 +55,7 @@ public class WifiOffloadUserEntry implements Comparable<WifiOffloadUserEntry> {
 		String entryStr = "";
 		
 		entryStr  += this.timestamp+",";
-		entryStr  += ((this.opeartion==0)?"ADD":((this.opeartion==1)?"REMOVE":"OTHER"));	
+		entryStr  += ((this.opeartion==0)?"ADD,":((this.opeartion==1)?"REMOVE,":"OTHER,"));	
 		entryStr  += this.userId+",";
 		entryStr  += this.dpId.getLong()+",";
 		entryStr  += this.portIn.getPortNumber()+",";
