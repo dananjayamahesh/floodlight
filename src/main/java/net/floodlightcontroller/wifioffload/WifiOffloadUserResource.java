@@ -57,7 +57,12 @@ public class WifiOffloadUserResource extends ServerResource {
 		WifiOffloadUserEntry n = null;
 		n = getUserEntryById(entry,wifioffload.getUserEntries());
 		log.info("Removing User "+entry.userMacAddress.toString()+" From This Controller");
-		this.remove(fmJson);
+		//this.remove(fmJson);
+		n.timestamp = System.currentTimeMillis();
+        n.opeartion = 1;
+        n.conType = wifioffload.getLocalController().conType;
+        WiFiOffloadPerformanceMonitor.printUserEntry(n);
+		wifioffload.deleteUserEntry(n.userId);
 		log.info("User Removed From The DataBase");
 		return n;
 	}
@@ -88,6 +93,7 @@ public class WifiOffloadUserResource extends ServerResource {
 			WifiOffloadUserEntry r = iter.next();
 			if (r.userId == entry.userId) {
 				exists = true;
+				
 				break;
 			}
 		}
